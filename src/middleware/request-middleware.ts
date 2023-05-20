@@ -1,8 +1,9 @@
+/* eslint-disable no-unsafe-optional-chaining */
 import {
   RequestHandler, Request, Response, NextFunction
 } from 'express';
 import Joi from 'joi';
-import BadRequest from '../errors/bad-request';
+import { BadRequest } from '../errors/bad-request';
 import logger from '../logger';
 
 /**

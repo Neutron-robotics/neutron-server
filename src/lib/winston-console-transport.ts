@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable no-unused-expressions */
 import Transport from 'winston-transport';
 
 /**

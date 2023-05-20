@@ -5,9 +5,10 @@ import fs from 'fs';
 import path from 'path';
 
 import * as BookController from './controllers/book';
+import useAuthentification from './controllers/auth';
 
 const swaggerUiOptions = {
-    customCss: '.swagger-ui .topbar { display: none }',
+  customCss: '.swagger-ui .topbar { display: none }'
 };
 
 const router = Router();
@@ -21,11 +22,14 @@ router.get('/book/search', BookController.search);
 router.get('/book/id/:bookId', BookController.get);
 router.delete('/book/id/:bookId', BookController.remove);
 
+// Auth
+useAuthentification(router);
+
 // Dev routes
 if (process.env.NODE_ENV === 'development') {
-    const swaggerYaml = yaml.load(fs.readFileSync(SWAGGER_YAML_FILEPATH, 'utf8')) as Object;
-    router.use('/dev/api-docs', swaggerUi.serve as any);
-    router.get('/dev/api-docs', swaggerUi.setup(swaggerYaml, swaggerUiOptions) as any);
+  const swaggerYaml = yaml.load(fs.readFileSync(SWAGGER_YAML_FILEPATH, 'utf8')) as Object;
+  router.use('/dev/api-docs', swaggerUi.serve as any);
+  router.get('/dev/api-docs', swaggerUi.setup(swaggerYaml, swaggerUiOptions) as any);
 }
 
 export default router;

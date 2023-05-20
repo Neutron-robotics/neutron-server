@@ -1,7 +1,20 @@
+/* eslint-disable max-classes-per-file */
 import ApplicationError from './application-error';
 
-export default class BadRequest extends ApplicationError {
-  constructor(message?: string) {
-    super(message || 'Bad request', 400);
+export class BadRequest extends ApplicationError {
+  constructor(message?: string, code = 400) {
+    super(message || 'Bad request', code);
+  }
+}
+
+export class Unauthorized extends ApplicationError {
+  constructor(message?: string, code = 401) {
+    super(message || 'Unauthorized', code);
+  }
+}
+
+export class NotFound extends ApplicationError {
+  constructor(message?: string, code = 404) {
+    super(message || 'Not found', code);
   }
 }
