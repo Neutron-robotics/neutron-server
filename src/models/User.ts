@@ -8,6 +8,7 @@ import {
   Schema, model, Document, Collection, Model
 } from 'mongoose';
 import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
+import logger from '../logger';
 
 const roles = ['user', 'admin'];
 
@@ -67,15 +68,26 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.pre('save', async function save(next) {
+  logger.info('pre', this.isModified('password'), this.isNew);
   if (this.isModified('password') || this.isNew) {
-    genSalt(10, async (err, salt) => {
-      if (err) {
-        return next(err);
-      }
+    try {
+      const salt = await genSalt(10);
       const h = await hash(this.password, salt);
       this.password = h;
       next();
-    });
+    } catch (err: any) {
+      logger.error(`Error: ${err}`);
+      next(err);
+    }
+    // genSalt(10, async (err, salt) => {
+    //   if (err) {
+    //     return next(err);
+    //   }
+    //   const h = await hash(this.password, salt);
+    //   logger.info(`generating pwd ${h}`);
+    //   this.password = h;
+    //   next();
+    // });
   } else {
     return next();
   }

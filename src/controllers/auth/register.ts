@@ -28,6 +28,10 @@ const register: RequestHandler = async (req: Request<{}, {}, RegisterBody>, res)
     activationKey
   });
   await user.save();
+  res.send({
+    message: 'Created',
+    user: user.toJSON()
+  });
 };
 
 export default requestMiddleware(register, { validation: { body: registerSchema } });

@@ -4,15 +4,15 @@ import Joi from 'joi';
 import User from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 
-export const verifySchema = Joi.object().keys({
-  key: Joi.string().required()
+export const verifyQuery = Joi.object().keys({
+  key: Joi.string().required().min(4)
 });
 
-interface VerifyBody {
+interface VerifyQuery {
     key: string,
 }
 
-const verify: RequestHandler = async (req: Request<{}, {}, VerifyBody>, res, next) => {
+const verify: RequestHandler = async (req: Request<{}, {}, VerifyQuery>, res, next) => {
   try {
     await User.findOneAndUpdate(
       { activationKey: req.query.key },
@@ -24,4 +24,4 @@ const verify: RequestHandler = async (req: Request<{}, {}, VerifyBody>, res, nex
   }
 };
 
-export default requestMiddleware(verify, { validation: { body: verifySchema } });
+export default requestMiddleware(verify, { validation: { query: verifyQuery } });
