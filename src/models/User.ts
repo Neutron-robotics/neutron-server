@@ -19,11 +19,12 @@ export interface IUser extends Document {
   lastName: string;
   activationKey: string;
   active: boolean;
-  role: string;
+  roles: string[];
 }
 
 interface IUserModel extends Model<IUser> {
   findAndGenerateToken(payload: { email: string, password: string }): Promise<IUser>
+  checkDuplicateEmailError(err: any): any
 }
 
 const userSchema = new Schema<IUser>(
@@ -56,9 +57,9 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false
     },
-    role: {
-      type: String,
-      default: 'user',
+    roles: {
+      type: [String],
+      default: ['user'],
       enum: roles
     }
   },
@@ -134,6 +135,13 @@ userSchema.statics.findAndGenerateToken = async function (payload: { email: stri
   if (!user.active) throw new Unauthorized('User not activated');
 
   return user;
+};
+
+userSchema.statics.checkDuplicateEmailError = function (err: any) {
+  if (err.code === 11000) {
+    return new BadRequest('Email already taken');
+  }
+  return err;
 };
 
 // userSchema.statics = {

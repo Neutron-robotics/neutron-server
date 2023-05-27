@@ -8,7 +8,7 @@ export const registerSchema = Joi.object().keys({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   password: Joi.string().required(),
-  email: Joi.string().required()
+  email: Joi.string().required().email()
 });
 
 interface RegisterBody {
@@ -18,20 +18,22 @@ interface RegisterBody {
     email: string
 }
 
-const register: RequestHandler = async (req: Request<{}, {}, RegisterBody>, res) => {
+const register: RequestHandler = async (req: Request<{}, {}, RegisterBody>, res, next) => {
   const { body } = req;
-
-  const activationKey = randomUUID();
-  const user = new User({
-    ...body,
-    active: false,
-    activationKey
-  });
-  await user.save();
-  res.send({
-    message: 'Created',
-    user: user.toJSON()
-  });
+  try {
+    const activationKey = randomUUID();
+    const user = new User({
+      ...body,
+      active: false,
+      activationKey
+    });
+    await user.save();
+    res.send({
+      message: 'OK'
+    });
+  } catch (error: any) {
+    next(User.checkDuplicateEmailError(error));
+  }
 };
 
 export default requestMiddleware(register, { validation: { body: registerSchema } });

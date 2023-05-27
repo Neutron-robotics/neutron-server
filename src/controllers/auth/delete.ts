@@ -17,15 +17,7 @@ interface DeleteBody {
 const deleteUser: RequestHandler = async (req: Request<{}, {}, DeleteBody>, res, next) => {
   const { body } = req;
   try {
-    const user = await User.findOne({
-      email: body.email
-    });
-    console.log('found user', user);
-    user?.deleteOne();
-    // User.deleteOne({
-    //   email: body.email
-    // });
-    await user?.save();
+    await User.deleteOne({ email: body.email }).exec();
     return res.json({ message: 'OK' });
   } catch (error) {
     next(error);
