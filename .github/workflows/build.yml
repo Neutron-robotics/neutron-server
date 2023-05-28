@@ -32,9 +32,6 @@ jobs:
       matrix:
         node-version: ["18"]
     name: Test using Node v${{ matrix.node-version }}
-    services:
-      mongodb:
-        image: mongo:6.0.5
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -43,6 +40,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: yarn
+      - run: bash scripts/test.sh
       - run: yarn
       - run: yarn test
         env:
