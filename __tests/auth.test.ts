@@ -4,18 +4,9 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import app from '../src/app';
 import User from '../src/models/User';
+import { generateRandomString } from './__utils__/string';
 
 describe('Authentication controller', () => {
-  function generateRandomString(n: number) {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-    for (let i = 0; i < n; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-
-    return result;
-  }
   let randomUser: any = {};
   const result = dotenv.config();
   if (result.error) {
@@ -303,10 +294,21 @@ describe('Authentication controller', () => {
   });
 
   it('delete an account', async () => {
-    const { userRequest } = await register(false);
+    const { userRequest } = await register(true);
+
+    const login = await request(app)
+      .post('/auth/login')
+      .send(
+        {
+          email: userRequest.email,
+          password: userRequest.password
+        }
+      );
+    expect(login.statusCode).toBe(200);
 
     const rres = await request(app)
       .delete('/auth/delete')
+      .auth(`${login.body.token}`, { type: 'bearer' })
       .send({
         email: userRequest.email
       });
@@ -316,5 +318,21 @@ describe('Authentication controller', () => {
 
     expect(rres.statusCode).toBe(200);
     expect(user.length).toBe(0);
+  });
+
+  it('fails delete a foreign account', async () => {
+    const { userRequest } = await register(true);
+
+    const rres = await request(app)
+      .delete('/auth/delete')
+      .send({
+        email: userRequest.email
+      });
+    const user = await User.findOne({
+      email: userRequest.email
+    }).exec();
+
+    expect(rres.statusCode).toBe(401);
+    expect(user).toBeDefined();
   });
 });

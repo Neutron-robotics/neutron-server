@@ -6,6 +6,7 @@ import path from 'path';
 
 import * as BookController from './controllers/book';
 import useAuthentification from './controllers/auth';
+import useAdminController from './controllers/admin';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -24,6 +25,7 @@ router.delete('/book/id/:bookId', BookController.remove);
 
 // Auth
 useAuthentification(router);
+useAdminController(router);
 
 // Dev routes
 if (process.env.NODE_ENV === 'development') {
