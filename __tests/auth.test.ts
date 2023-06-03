@@ -50,7 +50,7 @@ describe('Authentication controller', () => {
       firstName: 'hugo',
       lastName: 'test',
       password: 'toto1234',
-      email: `hugo.perier@${generateRandomString(5)}.com`
+      email: `hugo.perier@test-${generateRandomString(5)}.com`
     };
   });
 
@@ -59,7 +59,7 @@ describe('Authentication controller', () => {
   });
 
   it('Create an account', async () => {
-    const email = `hugo.test@${generateRandomString(5)}.com`;
+    const email = `hugo.test@test-${generateRandomString(5)}.com`;
     const resp = await request(app)
       .post('/auth/register')
       .send(
@@ -78,6 +78,7 @@ describe('Authentication controller', () => {
       email: email.toLowerCase()
     }).exec();
 
+    expect(user?.active).toBe(true);
     expect(user?.password?.length).toBeGreaterThan(5);
     expect(user?.password?.length).not.toBe(randomUser.password);
   });
@@ -95,7 +96,7 @@ describe('Authentication controller', () => {
     }).exec();
 
     expect(user2.length).toBe(1);
-    expect(user2[0].active).toBe(true);
+    expect(user2[0].roles.includes('verified')).toBe(true);
   });
 
   it('Login to an account', async () => {
@@ -140,7 +141,7 @@ describe('Authentication controller', () => {
   });
 
   it('Register duplicate email', async () => {
-    const email = `hugo.test@${generateRandomString(5)}.com`;
+    const email = `hugo.test@test-${generateRandomString(5)}.com`;
     const resp = await request(app)
       .post('/auth/register')
       .send(
@@ -210,7 +211,7 @@ describe('Authentication controller', () => {
     }).exec();
 
     expect(user.length).toBe(1);
-    expect(user[0].active).toBe(false);
+    expect(user[0].roles.includes('verified')).toBe(false);
   });
 
   it('Reset password of an account', async () => {

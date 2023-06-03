@@ -61,6 +61,31 @@ describe('Admin controller', () => {
       .auth(`${adminUser.token}`, { type: 'bearer' });
 
     expect(res.body.users.length).toBeGreaterThan(1);
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('fails to get all users if not admin', async () => {
+    const user = await User.findOne({ email: adminUser.email }).exec();
+    if (user?.roles) {
+      user.roles = [];
+      await user.save();
+    }
+
+    const me = await request(app)
+      .post('/auth/login')
+      .send(
+        {
+          password: adminUser.password,
+          email: adminUser.email
+        }
+      );
+
+    const res = await request(app)
+      .get('/admin/users')
+      .auth(`${me.body.token}`, { type: 'bearer' });
+
+    expect(res.body.users).not.toBeDefined();
+    expect(res.statusCode).toBe(403);
   });
 
   it('delete users', async () => {
@@ -86,11 +111,18 @@ describe('Admin controller', () => {
       .send({
         id: toBeDeleted?._id
       });
-    const user = await User.find({
+
+    const user = await User.findOne({
       email: userEmail
     }).exec();
 
     expect(rres.statusCode).toBe(200);
-    expect(user.length).toBe(0);
+    expect(user?.active).toBe(false);
   });
+
+  it.todo('get organizations');
+
+  it.todo('delete organizations');
+
+  it.todo('modify organisation user s right');
 });

@@ -17,7 +17,7 @@ const verify: RequestHandler = async (req: Request<{}, {}, VerifyQuery>, res, ne
   try {
     const result = await User.findOneAndUpdate(
       { activationKey: req.query.key },
-      { active: true }
+      { $set: { activationKey: null }, $push: { roles: 'verified' } }
     );
     if (!result) {
       next(new Unauthorized());

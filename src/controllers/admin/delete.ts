@@ -2,10 +2,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import { sign } from 'jsonwebtoken';
 import User from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
+import { NotFound } from '../../errors/bad-request';
 
 export const deleteSchema = Joi.object().keys({
   id: Joi.string().required()
@@ -18,7 +18,13 @@ interface DeleteBody {
 const deleteUser: RequestHandler = async (req: Request<{}, {}, DeleteBody>, res, next) => {
   const { body } = req;
   try {
-    await User.deleteOne({ _id: body.id }).exec();
+    const user = await User.findOne({ _id: body.id }).exec();
+    if (!user) {
+      next(new NotFound());
+      return;
+    }
+    user.active = false;
+    await user.save();
     return res.json({ message: 'OK' });
   } catch (error) {
     next(error);

@@ -24,7 +24,7 @@ const register: RequestHandler = async (req: Request<{}, {}, RegisterBody>, res,
     const activationKey = randomUUID();
     const user = new User({
       ...body,
-      active: false,
+      active: true,
       activationKey
     });
     await user.save();
