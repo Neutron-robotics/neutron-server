@@ -10,7 +10,7 @@ import {
 import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
 import logger from '../logger';
 
-const roles = ['user', 'admin'];
+const roles = ['user', 'admin', 'verified'];
 
 export interface IUser extends Document {
   email: string;

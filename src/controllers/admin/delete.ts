@@ -17,13 +17,13 @@ interface DeleteBody {
 
 const deleteUser: RequestHandler = async (req: Request<{}, {}, DeleteBody>, res, next) => {
   const { body } = req;
+  const user = await User.findOne({ _id: body.id }).exec();
+  if (!user) {
+    next(new NotFound());
+    return;
+  }
+  user.active = false;
   try {
-    const user = await User.findOne({ _id: body.id }).exec();
-    if (!user) {
-      next(new NotFound());
-      return;
-    }
-    user.active = false;
     await user.save();
     return res.json({ message: 'OK' });
   } catch (error) {

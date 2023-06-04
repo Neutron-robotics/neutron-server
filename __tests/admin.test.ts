@@ -1,7 +1,7 @@
 /* eslint-disable no-plusplus */
 import request from 'supertest';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import mongoose, { mongo } from 'mongoose';
 import app from '../src/app';
 import User from '../src/models/User';
 import { generateRandomString } from './__utils__/string';
@@ -13,7 +13,7 @@ describe('Admin controller', () => {
     dotenv.config({ path: '.env.default' });
   }
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     await mongoose.connect(process.env.MONGO_URL ?? '');
 
     adminUser = {
@@ -51,7 +51,8 @@ describe('Admin controller', () => {
     adminUser.user = user;
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
+    User.deleteOne({ email: adminUser.email });
     await mongoose.connection.close();
   });
 
@@ -90,7 +91,7 @@ describe('Admin controller', () => {
 
   it('delete users', async () => {
     const userEmail = `tester.foux@${generateRandomString(5)}.com`;
-    await request(app)
+    const r = await request(app)
       .post('/auth/register')
       .send(
         {

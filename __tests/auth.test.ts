@@ -194,7 +194,7 @@ describe('Authentication controller', () => {
     const { me } = res.body;
     expect(me.firstName).toBe(userRequest.firstName);
     expect(me.lastName).toBe(userRequest.lastName);
-    expect(me.roles).toStrictEqual(['user']);
+    expect(me.roles).toStrictEqual(['user', 'verified']);
     expect(me.email).toBe(userRequest.email.toLowerCase());
   });
 

@@ -2,7 +2,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import { sign } from 'jsonwebtoken';
 import User from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
