@@ -1,13 +1,14 @@
 /* eslint-disable no-plusplus */
 import request from 'supertest';
 import dotenv from 'dotenv';
-import mongoose, { mongo } from 'mongoose';
+import mongoose from 'mongoose';
 import app from '../src/app';
 import User from '../src/models/User';
-import { generateRandomString } from './__utils__/string';
+import { makeAdminUser, makeUser, withLogin } from './__utils__/user_setup';
 
 describe('Admin controller', () => {
   let adminUser: any = {};
+  let adminToken: string = '';
   const result = dotenv.config();
   if (result.error) {
     dotenv.config({ path: '.env.default' });
@@ -15,40 +16,9 @@ describe('Admin controller', () => {
 
   beforeEach(async () => {
     await mongoose.connect(process.env.MONGO_URL ?? '');
-
-    adminUser = {
-      firstName: 'hugo',
-      lastName: 'test',
-      password: 'toto1234',
-      email: `hugo.perier@${generateRandomString(5)}.com`
-    };
-    await request(app)
-      .post('/auth/register')
-      .send(
-        {
-          firstName: adminUser.firstName,
-          lastName: adminUser.lastName,
-          password: adminUser.password,
-          email: adminUser.email
-        }
-      );
-
-    const user = await User.findOne({ email: adminUser.email }).exec();
-    if (user?.roles) {
-      user.roles = ['admin'];
-      user.active = true;
-      await user.save();
-    }
-    const me = await request(app)
-      .post('/auth/login')
-      .send(
-        {
-          password: adminUser.password,
-          email: adminUser.email
-        }
-      );
-    adminUser.token = me.body.token;
-    adminUser.user = user;
+    const { user, password } = await makeAdminUser();
+    adminToken = await withLogin(user.email, password);
+    adminUser = user;
   });
 
   afterEach(async () => {
@@ -59,10 +29,10 @@ describe('Admin controller', () => {
   it('get all users', async () => {
     const res = await request(app)
       .get('/admin/users')
-      .auth(`${adminUser.token}`, { type: 'bearer' });
+      .auth(adminToken, { type: 'bearer' });
 
-    expect(res.body.users.length).toBeGreaterThan(1);
     expect(res.statusCode).toBe(200);
+    expect(res.body.users.length).toBeGreaterThan(1);
   });
 
   it('fails to get all users if not admin', async () => {
@@ -90,35 +60,25 @@ describe('Admin controller', () => {
   });
 
   it('delete users', async () => {
-    const userEmail = `tester.foux@${generateRandomString(5)}.com`;
-    const r = await request(app)
-      .post('/auth/register')
-      .send(
-        {
-          firstName: adminUser.firstName,
-          lastName: adminUser.lastName,
-          password: 'tititest',
-          email: userEmail
-        }
-      );
+    const { user } = await makeUser(false);
 
     const toBeDeleted = await User.findOne({
-      email: userEmail
+      email: user.email
     }).exec();
 
     const rres = await request(app)
       .delete('/admin/user')
-      .auth(`${adminUser.token}`, { type: 'bearer' })
+      .auth(adminToken, { type: 'bearer' })
       .send({
         id: toBeDeleted?._id
       });
 
-    const user = await User.findOne({
-      email: userEmail
+    const usr = await User.findOne({
+      email: user.email
     }).exec();
 
     expect(rres.statusCode).toBe(200);
-    expect(user?.active).toBe(false);
+    expect(usr?.active).toBe(false);
   });
 
   it.todo('get organizations');

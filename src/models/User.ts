@@ -126,6 +126,7 @@ userSchema.statics.findAndGenerateToken = async function (payload: { email: stri
 
   const user = await this.findOne({ email }).exec();
   if (!user) throw new NotFound(`No user associated with ${email}`, 404);
+  if (!user.active) throw new Unauthorized('User is disabled');
 
   const passwordOK = await user.passwordMatches(password);
 
