@@ -6,6 +6,7 @@ import path from 'path';
 
 import useAuthentification from './controllers/auth';
 import useAdminController from './controllers/admin';
+import useOrganization from './controllers/organization';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -18,6 +19,7 @@ const SWAGGER_YAML_FILEPATH = path.join(__dirname, '../openapi.yml');
 // Controllers
 useAuthentification(router);
 useAdminController(router);
+useOrganization(router);
 
 // Dev routes
 if (process.env.NODE_ENV === 'development') {
