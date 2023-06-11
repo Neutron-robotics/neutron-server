@@ -1,5 +1,3 @@
-/* eslint-disable consistent-return */
-import { randomUUID } from 'crypto';
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import User from '../../models/User';

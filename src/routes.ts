@@ -4,8 +4,9 @@ import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
 
-import * as BookController from './controllers/book';
 import useAuthentification from './controllers/auth';
+import useAdminController from './controllers/admin';
+import useOrganization from './controllers/organization';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -15,15 +16,10 @@ const router = Router();
 
 const SWAGGER_YAML_FILEPATH = path.join(__dirname, '../openapi.yml');
 
-// Book routes
-router.post('/book/add', BookController.add);
-router.get('/book/all', BookController.all);
-router.get('/book/search', BookController.search);
-router.get('/book/id/:bookId', BookController.get);
-router.delete('/book/id/:bookId', BookController.remove);
-
-// Auth
+// Controllers
 useAuthentification(router);
+useAdminController(router);
+useOrganization(router);
 
 // Dev routes
 if (process.env.NODE_ENV === 'development') {

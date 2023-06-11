@@ -11,7 +11,6 @@ const me: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
     const user = await User.findOne({ _id: userId }).exec();
     const payload = { ...user?.toJSON() };
     delete payload.password;
-    console.log(payload);
     res.send({
       me: payload
     });

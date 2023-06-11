@@ -1,27 +1,24 @@
-/* eslint-disable consistent-return */
-/* eslint-disable import/no-extraneous-dependencies */
-import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import { sign } from 'jsonwebtoken';
 import User from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
+import { withAuth } from '../../middleware/withAuth';
+import { Unauthorized } from '../../errors/bad-request';
 
-export const deleteSchema = Joi.object().keys({
-  email: Joi.string().required()
-});
+const deleteUser: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
+  const userId = (req as any).user.sub as string;
 
-interface DeleteBody {
-    email: string,
-}
-
-const deleteUser: RequestHandler = async (req: Request<{}, {}, DeleteBody>, res, next) => {
-  const { body } = req;
   try {
-    await User.deleteOne({ email: body.email }).exec();
+    const result = await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: { active: false } }
+    ).exec();
+    if (!result) {
+      next(new Unauthorized());
+    }
     return res.json({ message: 'OK' });
   } catch (error) {
     next(error);
   }
 };
 
-export default requestMiddleware(deleteUser, { validation: { body: deleteSchema } });
+export default withAuth(requestMiddleware(deleteUser));

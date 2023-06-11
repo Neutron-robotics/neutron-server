@@ -1,16 +1,11 @@
-/* eslint-disable consistent-return */
-/* eslint-disable max-len */
-/* eslint-disable func-names */
-/* eslint-disable import/no-import-module-exports */
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { compareSync, hash, genSalt } from 'bcrypt';
 import {
-  Schema, model, Document, Collection, Model
+  Schema, model, Document, Model
 } from 'mongoose';
 import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
 import logger from '../logger';
 
-const roles = ['user', 'admin'];
+const roles = ['user', 'admin', 'verified'];
 
 export interface IUser extends Document {
   email: string;
@@ -23,8 +18,11 @@ export interface IUser extends Document {
 }
 
 interface IUserModel extends Model<IUser> {
-  findAndGenerateToken(payload: { email: string, password: string }): Promise<IUser>
-  checkDuplicateEmailError(err: any): any
+  findAndGenerateToken(payload: {
+    email: string;
+    password: string;
+  }): Promise<IUser>;
+  checkDuplicateEmailError(err: any): any;
 }
 
 const userSchema = new Schema<IUser>(
@@ -51,7 +49,15 @@ const userSchema = new Schema<IUser>(
     },
     activationKey: {
       type: String,
-      unique: true
+      unique: true,
+      sparse: true, // Allows multiple documents to have a null value for activationKey
+      default: null,
+      validate: {
+        validator(value: string | null) {
+          return value === null || typeof value === 'string';
+        },
+        message: 'Activation key must be a string or null'
+      }
     },
     active: {
       type: Boolean,
@@ -80,15 +86,6 @@ userSchema.pre('save', async function save(next) {
       logger.error(`Error: ${err}`);
       next(err);
     }
-    // genSalt(10, async (err, salt) => {
-    //   if (err) {
-    //     return next(err);
-    //   }
-    //   const h = await hash(this.password, salt);
-    //   logger.info(`generating pwd ${h}`);
-    //   this.password = h;
-    //   next();
-    // });
   } else {
     return next();
   }
@@ -117,16 +114,23 @@ userSchema.post('save', async (doc, next) => {
   }
 });
 
-userSchema.method<IUser>('passwordMatches', function passwordMatches(password: string) {
-  return compareSync(password, this.password);
-});
+userSchema.method<IUser>(
+  'passwordMatches',
+  function passwordMatches(password: string) {
+    return compareSync(password, this.password);
+  }
+);
 
-userSchema.statics.findAndGenerateToken = async function (payload: { email: string, password: string }) {
+userSchema.statics.findAndGenerateToken = async function (payload: {
+  email: string;
+  password: string;
+}) {
   const { email, password } = payload;
   if (!email) throw new BadRequest('Email must be provided for login');
 
   const user = await this.findOne({ email }).exec();
   if (!user) throw new NotFound(`No user associated with ${email}`, 404);
+  if (!user.active) throw new Unauthorized('User is disabled');
 
   const passwordOK = await user.passwordMatches(password);
 
@@ -143,52 +147,6 @@ userSchema.statics.checkDuplicateEmailError = function (err: any) {
   }
   return err;
 };
-
-// userSchema.statics = {
-//   roles,
-
-//   checkDuplicateEmailError(err) {
-//     if (err.code === 11000) {
-//       const error = new Error('Email already taken');
-//       error.errors = [
-//         {
-//           field: 'email',
-//           location: 'body',
-//           messages: ['Email already taken']
-//         }
-//       ];
-//       error.status = httpStatus.CONFLICT;
-//       return error;
-//     }
-
-//     return err;
-//   },
-
-//   async findAndGenerateToken(payload) {
-//     const { email, password } = payload;
-//     if (!email) throw new APIError('Email must be provided for login');
-
-//     const user = await this.findOne({ email }).exec();
-//     if (!user) {
-//       throw new APIError(
-//         `No user associated with ${email}`,
-//         httpStatus.NOT_FOUND
-//       );
-//     }
-
-//     const passwordOK = await user.passwordMatches(password);
-
-//     if (!passwordOK) {
-//       throw new APIError('Password mismatch', httpStatus.UNAUTHORIZED);
-//     }
-
-//     if (!user.active) {
-//       throw new APIError('User not activated', httpStatus.UNAUTHORIZED);
-//     }
-
-//     return user;
-//   }
-// };
 
 const User = model<IUser, IUserModel>('User', userSchema);
 

@@ -1,5 +1,3 @@
-/* eslint-disable consistent-return */
-/* eslint-disable import/no-extraneous-dependencies */
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import { sign } from 'jsonwebtoken';

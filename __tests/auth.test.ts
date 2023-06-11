@@ -1,65 +1,27 @@
-/* eslint-disable no-plusplus */
 import request from 'supertest';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import app from '../src/app';
 import User from '../src/models/User';
+import { generateRandomString } from './__utils__/string';
+import { deleteUser, makeUser, withLogin } from './__utils__/user_setup';
 
 describe('Authentication controller', () => {
-  function generateRandomString(n: number) {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomUserProps: any = {};
 
-    for (let i = 0; i < n; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-
-    return result;
-  }
-  let randomUser: any = {};
   const result = dotenv.config();
   if (result.error) {
     dotenv.config({ path: '.env.default' });
   }
 
-  const register = async (verify: boolean) => {
-    const email = `hugo.test@${generateRandomString(5)}.com`;
-    await request(app)
-      .post('/auth/register')
-      .send(
-        {
-          firstName: randomUser.firstName,
-          lastName: randomUser.lastName,
-          password: randomUser.password,
-          email
-        }
-      );
-
-    const userRequest = {
-      email,
-      firstName: randomUser.firstName,
-      lastName: randomUser.lastName,
-      password: randomUser.password
-    };
-    const user = await User.findOne({
-      email: userRequest.email.toLowerCase()
-    }).exec();
-
-    if (verify) {
-      await request(app)
-        .post(`/auth/verify?key=${user?.activationKey}`);
-    }
-    return { userRequest, user };
-  };
-
   beforeEach(async () => {
     await mongoose.connect(process.env.MONGO_URL ?? '');
 
-    randomUser = {
+    randomUserProps = {
       firstName: 'hugo',
       lastName: 'test',
       password: 'toto1234',
-      email: `hugo.perier@${generateRandomString(5)}.com`
+      email: `hugo.user@test-${generateRandomString(5)}.com`
     };
   });
 
@@ -68,14 +30,14 @@ describe('Authentication controller', () => {
   });
 
   it('Create an account', async () => {
-    const email = `hugo.test@${generateRandomString(5)}.com`;
+    const email = `hugo.test@test-${generateRandomString(5)}.com`;
     const resp = await request(app)
       .post('/auth/register')
       .send(
         {
-          firstName: randomUser.firstName,
-          lastName: randomUser.lastName,
-          password: randomUser.password,
+          firstName: randomUserProps.firstName,
+          lastName: randomUserProps.lastName,
+          password: randomUserProps.password,
           email
         }
       );
@@ -87,12 +49,16 @@ describe('Authentication controller', () => {
       email: email.toLowerCase()
     }).exec();
 
+    expect(user?.active).toBe(true);
     expect(user?.password?.length).toBeGreaterThan(5);
-    expect(user?.password?.length).not.toBe(randomUser.password);
+    expect(user?.password?.length).not.toBe(randomUserProps.password);
+
+    // cleanup
+    await deleteUser(email);
   });
 
   it('Verify an account', async () => {
-    const { user } = await register(false);
+    const { user } = await makeUser(false);
     const resp = await request(app)
       .post(`/auth/verify?key=${user?.activationKey}`);
 
@@ -104,22 +70,28 @@ describe('Authentication controller', () => {
     }).exec();
 
     expect(user2.length).toBe(1);
-    expect(user2[0].active).toBe(true);
+    expect(user2[0].roles.includes('verified')).toBe(true);
+
+    // cleanup
+    await deleteUser(user.email);
   });
 
   it('Login to an account', async () => {
-    const { userRequest } = await register(true);
+    const { user, password } = await makeUser(true);
 
     const res = await request(app)
       .post('/auth/login')
       .send(
         {
-          email: userRequest.email,
-          password: randomUser.password
+          email: user?.email,
+          password
         }
       );
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeDefined();
+
+    // cleanup
+    await deleteUser(user.email);
   });
 
   it('Login to an account that does not exist', async () => {
@@ -135,7 +107,7 @@ describe('Authentication controller', () => {
   });
 
   it('Login wrong to an account', async () => {
-    const { user } = await register(false);
+    const { user } = await makeUser(false);
 
     const res = await request(app)
       .post('/auth/login')
@@ -146,114 +118,98 @@ describe('Authentication controller', () => {
         }
       );
     expect(res.statusCode).toBe(401);
+
+    // cleanup
+    await deleteUser(user.email);
   });
 
-  it('Register duplicate email', async () => {
-    const email = `hugo.test@${generateRandomString(5)}.com`;
+  it('fails to register with duplicate email', async () => {
+    const { user } = await makeUser(false);
     const resp = await request(app)
       .post('/auth/register')
       .send(
         {
-          firstName: randomUser.firstName,
-          lastName: randomUser.lastName,
-          password: randomUser.password,
-          email
-        }
-      );
-    const resp2 = await request(app)
-      .post('/auth/register')
-      .send(
-        {
-          firstName: randomUser.firstName,
-          lastName: randomUser.lastName,
-          password: randomUser.password,
-          email
+          firstName: 'notimportant',
+          lastName: 'notimportant',
+          password: 'notimportant',
+          email: user?.email
         }
       );
 
-    expect(resp.statusCode).toBe(200);
-    expect(resp2.statusCode).toBe(400);
-
-    const user = await User.find({
-      email: email.toLowerCase()
+    const usrs = await User.find({
+      email: user?.email.toLowerCase()
     }).exec();
 
-    expect(user.length).toBe(1);
+    expect(resp.statusCode).toBe(400);
+    expect(usrs.length).toBe(1);
+
+    // cleanup
+    await deleteUser(user.email);
   });
 
   it('get my account', async () => {
-    const { userRequest } = await register(true);
-
-    const login = await request(app)
-      .post('/auth/login')
-      .send(
-        {
-          email: userRequest.email,
-          password: randomUser.password
-        }
-      );
-
-    expect(login.statusCode).toBe(200);
+    const { user, password } = await makeUser(true);
+    const token = await withLogin(user.email, password);
 
     const res = await request(app)
       .get('/auth/me')
-      .auth(`${login.body.token}`, { type: 'bearer' });
+      .auth(token, { type: 'bearer' });
     expect(res.statusCode).toBe(200);
     const { me } = res.body;
-    expect(me.firstName).toBe(userRequest.firstName);
-    expect(me.lastName).toBe(userRequest.lastName);
-    expect(me.roles).toStrictEqual(['user']);
-    expect(me.email).toBe(userRequest.email.toLowerCase());
+    expect(me.firstName).toBe(user?.firstName);
+    expect(me.lastName).toBe(user?.lastName);
+    expect(me.roles).toStrictEqual(['user', 'verified']);
+    expect(me.email).toBe(user?.email);
+
+    // cleanup
+    await deleteUser(user.email);
   });
 
   it('Verify an account with a wrong code', async () => {
-    const { userRequest } = await register(false);
+    const { user } = await makeUser(false);
 
     const resp = await request(app)
       .post('/auth/verify?key=$blablabla');
 
     expect(resp.statusCode).toBe(401);
 
-    const user = await User.find({
-      email: userRequest.email
+    const usr = await User.find({
+      email: user?.email
     }).exec();
 
-    expect(user.length).toBe(1);
-    expect(user[0].active).toBe(false);
+    expect(usr.length).toBe(1);
+    expect(usr[0].roles.includes('verified')).toBe(false);
+
+    // cleanup
+    await deleteUser(user.email);
   });
 
   it('Reset password of an account', async () => {
-    const { userRequest, user } = await register(true);
+    const { user } = await makeUser(true);
 
     const reset = await request(app)
       .post('/auth/reset')
       .send({
-        email: userRequest.email.toLowerCase()
+        email: user?.email
       });
 
     expect(reset.statusCode).toBe(200);
 
     const userAgain = await User.find({
-      email: userRequest.email
+      email: user?.email
     }).exec();
 
     expect(userAgain[0].activationKey).toBeDefined();
     expect(userAgain.length).toBe(1);
     expect(userAgain[0].password).not.toBe(user?.password);
+
+    // cleanup
+    await deleteUser(user.email);
   });
 
   it('update account', async () => {
-    const { userRequest, user } = await register(true);
-
-    const login = await request(app)
-      .post('/auth/login')
-      .send(
-        {
-          email: userRequest.email,
-          password: randomUser.password
-        }
-      );
-    expect(login.statusCode).toBe(200);
+    const { user, password } = await makeUser(true);
+    const token = await withLogin(user?.email, password);
 
     const newEmail = `${generateRandomString(5)}jajaja@test.com`;
 
@@ -262,7 +218,7 @@ describe('Authentication controller', () => {
       .send({
         email: newEmail,
         password: 'testtoo'
-      }).auth(`${login.body.token}`, { type: 'bearer' });
+      }).auth(token, { type: 'bearer' });
 
     expect(update.statusCode).toBe(200);
 
@@ -271,7 +227,7 @@ describe('Authentication controller', () => {
     }).exec();
 
     const oldUser = await User.find({
-      email: userRequest.email
+      email: user.email
     }).exec();
 
     expect(oldUser.length).toBe(0);
@@ -280,41 +236,49 @@ describe('Authentication controller', () => {
     expect(userAgain[0].password).not.toBe(user?.password);
     expect(userAgain[0].firstName).toBe(user?.firstName);
     expect(userAgain[0].lastName).toBe(user?.lastName);
+
+    // cleanup
+    await deleteUser(newEmail.toLowerCase());
   });
 
-  it('fails to create duplicate account', async () => {
-    const { userRequest } = await register(false);
-    const res2 = await request(app)
-      .post('/auth/register')
-      .send(
-        {
-          firstName: randomUser.firstName,
-          lastName: randomUser.lastName,
-          password: randomUser.password,
-          email: userRequest.email
-        }
-      );
-    const users = await User.find({
-      email: userRequest.email
-    }).exec();
-
-    expect(users.length).toBe(1);
-    expect(res2.statusCode).toBe(400);
-  });
-
-  it('delete an account', async () => {
-    const { userRequest } = await register(false);
+  it('delete my account (deactivate)', async () => {
+    const { user, password } = await makeUser(true);
+    const token = await withLogin(user.email, password);
 
     const rres = await request(app)
       .delete('/auth/delete')
-      .send({
-        email: userRequest.email
-      });
-    const user = await User.find({
-      email: userRequest.email
+      .auth(token, { type: 'bearer' });
+
+    const usrs = await User.find({
+      email: user.email
     }).exec();
 
     expect(rres.statusCode).toBe(200);
-    expect(user.length).toBe(0);
+    expect(usrs.length).toBe(1);
+    expect(usrs[0].active).toBe(false);
+  });
+
+  it('Login must fails on a disabled account', async () => {
+    const { user, password } = await makeUser(false);
+    const token = await withLogin(user.email, password);
+
+    const rres = await request(app)
+      .delete('/auth/delete')
+      .auth(token, { type: 'bearer' });
+
+    expect(rres.statusCode).toBe(200);
+
+    const res = await request(app)
+      .post('/auth/login')
+      .send(
+        {
+          email: user?.email,
+          password
+        }
+      );
+    expect(res.statusCode).toBe(401);
+
+    // cleanup
+    await deleteUser(user.email);
   });
 });

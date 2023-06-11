@@ -22,7 +22,8 @@ const getMessageFromJoiError = (error: Joi.ValidationError): string | undefined 
 interface HandlerOptions {
   validation?: {
     body?: Joi.ObjectSchema
-    query?: Joi.ObjectSchema
+    query?: Joi.ObjectSchema,
+    params?: Joi.ObjectSchema
   }
 };
 
@@ -33,7 +34,7 @@ interface HandlerOptions {
  * @param handler Request handler to check for error
  */
 export const requestMiddleware = (
-  handler: RequestHandler,
+  handler: RequestHandler<any>,
   options?: HandlerOptions,
 ): RequestHandler => async (req: Request, res: Response, next: NextFunction) => {
   if (options?.validation?.body) {
@@ -45,8 +46,15 @@ export const requestMiddleware = (
   }
 
   if (options?.validation?.query) {
-    const { error } = options?.validation?.query?.validate(req.query)
-    ?? options?.validation?.query?.validate(req.query);
+    const { error } = options?.validation?.query?.validate(req.query);
+    if (error != null) {
+      next(new BadRequest(getMessageFromJoiError(error)));
+      return;
+    }
+  }
+
+  if (options?.validation?.params) {
+    const { error } = options?.validation?.params?.validate(req.params);
     if (error != null) {
       next(new BadRequest(getMessageFromJoiError(error)));
       return;

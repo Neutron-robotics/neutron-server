@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import { RequestHandler, Request } from 'express';
 import Joi from 'joi';
 import User from '../../models/User';
@@ -17,8 +16,8 @@ const verify: RequestHandler = async (req: Request<{}, {}, VerifyQuery>, res, ne
   try {
     const result = await User.findOneAndUpdate(
       { activationKey: req.query.key },
-      { active: true }
-    );
+      { $set: { activationKey: undefined }, $push: { roles: 'verified' } }
+    ).exec();
     if (!result) {
       next(new Unauthorized());
     }
