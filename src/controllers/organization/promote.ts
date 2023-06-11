@@ -36,8 +36,13 @@ const promote: RequestHandler<any> = async (
     const organization = await Organization.findOne({ name: params.organization }).exec();
     if (!organization) { throw new NotFound(); };
 
-    // verify if the user is owner of the organization
-    if (!organization.users.find(e => e.userId.toString() === userId && e.permissions.includes('owner'))) { throw new Forbidden(); };
+    const userRelationAuthor = organization.users.find(e => e.userId.toString() === userId);
+
+    if (!userRelationAuthor) { throw new Forbidden(); };
+    // Only owner can transfer the ownership
+    if (!userRelationAuthor.permissions.includes('owner') && body.role === 'owner') { throw new Forbidden(); };
+    // only these users can promote
+    if (!userRelationAuthor.permissions.includes('owner') && !userRelationAuthor.permissions.includes('admin')) { throw new Forbidden(); };
 
     // find the user on which the operation will apply
     const userToBeGranted = await User.findOne({ email: body.user.toLowerCase() }).exec();
@@ -56,6 +61,13 @@ const promote: RequestHandler<any> = async (
       // otherwise we add the role if he does not already have it
       userToBeGrantedRelation.permissions.push(body.role);
     }
+
+    // In case of transfer of ownership we remove the role for the previous owner
+    // and we replace it by the admin role
+    if (body.role === 'owner') {
+      userRelationAuthor.permissions = userRelationAuthor.permissions.filter(e => e !== 'owner');
+      userRelationAuthor.permissions.push('admin');
+    };
 
     await organization.save();
     return res.json({

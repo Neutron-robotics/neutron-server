@@ -1,9 +1,11 @@
-import { compareSync, hash, genSalt } from "bcrypt";
-import { Schema, model, Document, Model } from "mongoose";
-import { BadRequest, NotFound, Unauthorized } from "../errors/bad-request";
-import logger from "../logger";
+import { compareSync, hash, genSalt } from 'bcrypt';
+import {
+  Schema, model, Document, Model
+} from 'mongoose';
+import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
+import logger from '../logger';
 
-const roles = ["user", "admin", "verified"];
+const roles = ['user', 'admin', 'verified'];
 
 export interface IUser extends Document {
   email: string;
@@ -29,21 +31,21 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
+      lowercase: true
     },
     password: {
       type: String,
       required: true,
       minlength: 4,
-      maxlength: 128,
+      maxlength: 128
     },
     firstName: {
       type: String,
-      maxlength: 50,
+      maxlength: 50
     },
     lastName: {
       type: String,
-      maxlength: 50,
+      maxlength: 50
     },
     activationKey: {
       type: String,
@@ -52,29 +54,29 @@ const userSchema = new Schema<IUser>(
       default: null,
       validate: {
         validator(value: string | null) {
-          return value === null || typeof value === "string";
+          return value === null || typeof value === 'string';
         },
-        message: "Activation key must be a string or null",
-      },
+        message: 'Activation key must be a string or null'
+      }
     },
     active: {
       type: Boolean,
-      default: false,
+      default: false
     },
     roles: {
       type: [String],
-      default: ["user"],
-      enum: roles,
-    },
+      default: ['user'],
+      enum: roles
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-userSchema.pre("save", async function save(next) {
-  logger.info("pre", this.isModified("password"), this.isNew);
-  if (this.isModified("password") || this.isNew) {
+userSchema.pre('save', async function save(next) {
+  logger.info('pre', this.isModified('password'), this.isNew);
+  if (this.isModified('password') || this.isNew) {
     try {
       const salt = await genSalt(10);
       const h = await hash(this.password, salt);
@@ -89,7 +91,7 @@ userSchema.pre("save", async function save(next) {
   }
 });
 
-userSchema.post("save", async (doc, next) => {
+userSchema.post('save', async (doc, next) => {
   try {
     // const mailOptions = {
     //   from: 'noreply',
@@ -113,7 +115,7 @@ userSchema.post("save", async (doc, next) => {
 });
 
 userSchema.method<IUser>(
-  "passwordMatches",
+  'passwordMatches',
   function passwordMatches(password: string) {
     return compareSync(password, this.password);
   }
@@ -124,28 +126,28 @@ userSchema.statics.findAndGenerateToken = async function (payload: {
   password: string;
 }) {
   const { email, password } = payload;
-  if (!email) throw new BadRequest("Email must be provided for login");
+  if (!email) throw new BadRequest('Email must be provided for login');
 
   const user = await this.findOne({ email }).exec();
   if (!user) throw new NotFound(`No user associated with ${email}`, 404);
-  if (!user.active) throw new Unauthorized("User is disabled");
+  if (!user.active) throw new Unauthorized('User is disabled');
 
   const passwordOK = await user.passwordMatches(password);
 
-  if (!passwordOK) throw new Unauthorized("Password mismatch");
+  if (!passwordOK) throw new Unauthorized('Password mismatch');
 
-  if (!user.active) throw new Unauthorized("User not activated");
+  if (!user.active) throw new Unauthorized('User not activated');
 
   return user;
 };
 
 userSchema.statics.checkDuplicateEmailError = function (err: any) {
   if (err.code === 11000) {
-    return new BadRequest("Email already taken");
+    return new BadRequest('Email already taken');
   }
   return err;
 };
 
-const User = model<IUser, IUserModel>("User", userSchema);
+const User = model<IUser, IUserModel>('User', userSchema);
 
 export default User;

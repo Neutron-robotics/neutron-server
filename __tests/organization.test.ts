@@ -210,7 +210,32 @@ describe('organization tests', () => {
     await Organization.deleteOne({ name: organization.name }).exec();
   });
 
-  it.todo('transfer ownership of an organization');
+  it('transfer ownership of an organization', async () => {
+    const organization = await makeOrganization(token);
+    const { user: granterUser } = await makeUser(true);
+
+    const res = await request(app)
+      .post(`/organization/${organization.name}/promote`)
+      .auth(token, { type: 'bearer' })
+      .send({
+        user: granterUser.email,
+        role: 'owner'
+      });
+
+    const organization2 = await Organization.findOne({
+      name: organization.name
+    }).exec();
+    expect(organization2).toBeDefined();
+    // Granter user is now the owner
+    expect(organization2?.users.find(e => e.userId.toString() === granterUser.id.toString() && e.permissions.includes('owner'))).toBeDefined();
+    // User became admin
+    expect(organization2?.users.find(e => e.userId.toString() === user.id.toString() && e.permissions.includes('admin'))).toBeDefined();
+    expect(res.statusCode).toBe(200);
+
+    expect(organization2?.users.filter(e => e.permissions.includes('owner')).length).toBe(1);
+
+    await Organization.deleteOne({ name: organization.name }).exec();
+  });
 
   it.todo('add a robot to an organization');
 

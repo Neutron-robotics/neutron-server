@@ -42,7 +42,7 @@
         "properties": "never"
       }
     ],
-    "func-names": ["error", "never"],
+    "func-names": "off",
     "arrow-parens": ["error", "as-needed"],
     "semi": "error",
     "no-extra-semi": 0,

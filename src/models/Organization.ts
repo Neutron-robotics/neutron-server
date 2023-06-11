@@ -3,6 +3,8 @@ import {
 } from 'mongoose';
 import { BadRequest } from '../errors/bad-request';
 
+const roles = ['guest', 'operator', 'analyst', 'admin', 'owner'];
+
 interface IUserRelation {
     userId: string,
     permissions: string[]
@@ -51,7 +53,10 @@ const OrganizationSchema = new Schema<IOrganization>({
       type: Schema.Types.ObjectId,
       ref: 'User'
     },
-    permissions: []
+    permissions: {
+      type: [String],
+      enum: roles
+    }
   }]
 });
 
