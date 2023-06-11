@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import { Request, RequestHandler } from 'express';
 import User from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';

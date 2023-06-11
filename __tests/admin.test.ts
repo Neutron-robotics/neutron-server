@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 import request from 'supertest';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';

@@ -31,8 +31,11 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
       }]
     });
     await organization.save();
+    return res.json({
+      message: 'OK'
+    });
   } catch (error: any) {
-    next(Organization.checkDuplicateNameError(error));
+    next(Organization.checkDuplicateError(error));
   }
 };
 

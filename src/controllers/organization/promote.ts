@@ -1,15 +1,14 @@
-import { randomUUID } from 'crypto';
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import User from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization from '../../models/Organization';
-import { BadRequest, Forbidden, NotFound } from '../../errors/bad-request';
+import { Forbidden, NotFound } from '../../errors/bad-request';
 
 const promoteSchemaBody = Joi.object().keys({
   role: Joi.string().required(),
-  user: Joi.string().required()
+  user: Joi.string().required().email()
 });
 
 const promoteSchemaParams = Joi.object().keys({
@@ -38,10 +37,10 @@ const promote: RequestHandler<any> = async (
     if (!organization) { throw new NotFound(); };
 
     // verify if the user is owner of the organization
-    if (!organization.users.find(e => e.userId === userId && e.permissions.includes('owner'))) { throw new Forbidden(); };
+    if (!organization.users.find(e => e.userId.toString() === userId && e.permissions.includes('owner'))) { throw new Forbidden(); };
 
     // find the user on which the operation will apply
-    const userToBeGranted = await User.findOne({ email: body.user }).exec();
+    const userToBeGranted = await User.findOne({ email: body.user.toLowerCase() }).exec();
     if (!userToBeGranted) throw new NotFound(`Cannot find user associated with the email ${body.user}`);
 
     const userToBeGrantedRelation = organization.users
@@ -59,7 +58,7 @@ const promote: RequestHandler<any> = async (
     }
 
     await organization.save();
-    res.send({
+    return res.json({
       message: 'OK'
     });
   } catch (error: any) {

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import request from 'supertest';
 import { generateRandomString } from './string';
 import app from '../../src/app';

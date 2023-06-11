@@ -19,7 +19,7 @@ export interface IOrganization extends Document {
 }
 
 interface IOrganizationModel extends Model<IOrganization> {
-    checkDuplicateNameError(err: any): any
+  checkDuplicateError(err: any): any
 }
 
 const OrganizationSchema = new Schema<IOrganization>({
@@ -55,7 +55,7 @@ const OrganizationSchema = new Schema<IOrganization>({
   }]
 });
 
-OrganizationSchema.statics.checkDuplicateEmailError = function (err: any) {
+OrganizationSchema.statics.checkDuplicateError = function (err: any) {
   if (err.code === 11000) {
     return new BadRequest('Name already used');
   }

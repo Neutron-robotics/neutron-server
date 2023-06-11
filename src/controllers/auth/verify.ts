@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import { RequestHandler, Request } from 'express';
 import Joi from 'joi';
 import User from '../../models/User';

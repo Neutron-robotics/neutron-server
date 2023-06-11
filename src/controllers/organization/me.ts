@@ -1,5 +1,5 @@
 import { Request, RequestHandler } from 'express';
-import User, { IUser } from '../../models/User';
+import User from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import { NotFound } from '../../errors/bad-request';
@@ -19,7 +19,8 @@ const me: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
       .exec())
       .map(({ active, ...rest }) => rest);
 
-    res.send({
+    return res.json({
+      message: 'OK',
       organizations
     });
   } catch (error: any) {

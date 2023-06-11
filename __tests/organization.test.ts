@@ -6,6 +6,7 @@ import User from '../src/models/User';
 import { makeUser, withLogin } from './__utils__/user_setup';
 import { makeOrganization } from './__utils__/organization_setup';
 import Organization from '../src/models/Organization';
+import { generateRandomString } from './__utils__/string';
 
 describe('organization tests', () => {
   let user: any = {};
@@ -28,61 +29,71 @@ describe('organization tests', () => {
   });
 
   it('create an organization', async () => {
+    const orgName = `test organization ${generateRandomString(4)}`;
     const res = await request(app)
       .post('/organization/create')
       .auth(token, { type: 'bearer' })
       .send({
-        name: 'My organization',
+        name: orgName,
         company: 'Hugosoft',
         description: 'This should be a long string to be displayed',
         imgUrl: 'https://static.hugosoft.com/neutron/img.png'
       });
 
     const organization = await Organization.findOne({
-      company: 'Hugosoft'
+      name: orgName
     }).exec();
 
     expect(organization?.users.length).toBe(1);
     expect(res.statusCode).toBe(200);
+    await Organization.deleteOne({ name: orgName }).exec();
   });
 
   it('get my organizations', async () => {
-    await makeOrganization(token);
+    const organization = await makeOrganization(token);
 
     const res = await request(app)
       .get('/organization/me')
       .auth(token, { type: 'bearer' });
 
     const organizations = await Organization.find({
-      company: 'Hugosoft'
+      name: organization.name
     }).exec();
 
     expect(organizations.length).toBe(1);
     expect(res.statusCode).toBe(200);
+    await Organization.deleteOne({ name: organization.name }).exec();
   });
 
   it('update an organization', async () => {
     const organization = await makeOrganization(token);
+    const newName = `test organization ${generateRandomString(4)}`;
 
     const res = await request(app)
-      .post(`/organization/${organization.name}/company=Hugosoft 2`)
+      .post(`/organization/${organization.name}/update`)
       .auth(token, { type: 'bearer' })
       .send({
-        name: 'My new organization',
+        name: newName,
         company: 'Hugosoft 2',
         description: 'This should be a abrupt string to be displayed',
         imgUrl: 'https://static.hugosoft.com/neutron/imgnew.png'
       });
 
     const organization2 = await Organization.findOne({
-      company: 'Hugosoft 2'
+      name: organization.name
     }).exec();
 
+    const organizationUpdated = await Organization.findOne({
+      name: newName
+    }).exec();
+
+    expect(organization2).toBeNull();
     expect(res.statusCode).toBe(200);
-    expect(organization2?.name).toBe('My new organization');
-    expect(organization2?.company).toBe('Hugosoft 2');
-    expect(organization2?.description).toBe('This should be a abrupt string to be displayed');
-    expect(organization2?.imgUrl).toBe('https://static.hugosoft.com/neutron/imgnew.png');
+    expect(organizationUpdated?.name).toBe(newName);
+    expect(organizationUpdated?.company).toBe('Hugosoft 2');
+    expect(organizationUpdated?.description).toBe('This should be a abrupt string to be displayed');
+    expect(organizationUpdated?.imgUrl).toBe('https://static.hugosoft.com/neutron/imgnew.png');
+    await Organization.deleteOne({ name: organizationUpdated?.name }).exec();
   });
 
   it('delete an organization (deactivate)', async () => {
@@ -93,11 +104,11 @@ describe('organization tests', () => {
       .auth(token, { type: 'bearer' });
 
     const deleted = await Organization.findOne({
-      company: 'Hugosoft'
+      name: organization.name
     }).exec();
 
-    expect(deleted?.active).toBe(false);
     expect(res.statusCode).toBe(200);
+    expect(deleted?.active).toBe(false);
   });
 
   it('fail to update an organization without appropriate rights', async () => {
@@ -116,15 +127,15 @@ describe('organization tests', () => {
       });
 
     const unchanged = await Organization.findOne({
-      company: 'Hugosoft 2'
+      name: organization.name
     }).exec();
 
-    expect(organization.enabled).toBe(true);
-    expect(res.statusCode).toBe(401);
-    expect(unchanged?.name).toBe('My organization');
+    expect(organization.active).toBe(true);
+    expect(res.statusCode).toBe(403);
     expect(unchanged?.company).toBe('Hugosoft');
     expect(unchanged?.description).toBe('This should be a long string to be displayed');
     expect(unchanged?.imgUrl).toBe('https://static.hugosoft.com/neutron/img.png');
+    await Organization.deleteOne({ name: organization.name }).exec();
   });
 
   it('fail to delete an organization without appropriate rights', async () => {
@@ -133,15 +144,16 @@ describe('organization tests', () => {
     const notGoodToken = await withLogin(notGoodUser.email, pwdForNotGoodUser);
 
     const res = await request(app)
-      .delete(`/organization/${organization.company}/delete`)
+      .delete(`/organization/${organization.name}/delete`)
       .auth(notGoodToken, { type: 'bearer' });
 
     const notDeleted = await Organization.findOne({
-      company: 'Hugosoft'
+      name: organization.name
     }).exec();
 
     expect(notDeleted?.active).toBe(true);
-    expect(res.statusCode).toBe(401);
+    expect(res.statusCode).toBe(403);
+    await Organization.deleteOne({ name: organization.name }).exec();
   });
 
   it('grant right to a user for an organization', async () => {
@@ -149,56 +161,56 @@ describe('organization tests', () => {
     const { user: granterUser } = await makeUser(true);
 
     const res = await request(app)
-      .delete('/organization/promote')
+      .post(`/organization/${organization.name}/promote`)
       .auth(token, { type: 'bearer' })
       .send({
         user: granterUser.email,
-        right: 'operator'
+        role: 'operator'
       });
 
     const organization2 = await Organization.findOne({
-      company: organization.company
+      name: organization.name
     }).exec();
-    expect(organization2?.users.find(e => e.userId === granterUser.id && e.permissions.includes('operator'))).toBe(true);
+    expect(organization2).toBeDefined();
+    expect(organization2?.users.find(e => e.userId.toString() === granterUser.id.toString() && e.permissions.includes('operator'))).toBeDefined();
     expect(res.statusCode).toBe(200);
+    await Organization.deleteOne({ name: organization.name }).exec();
   });
 
-  it('ungrant right to a user for an organization', async () => {
+  it('remove a user from an organization', async () => {
     const organization = await makeOrganization(token);
     const { user: grantedUser, password: grantedUserPassword } = await makeUser(true);
 
     const res = await request(app)
-      .delete('/organization/promote')
+      .post(`/organization/${organization.name}/promote`)
       .auth(token, { type: 'bearer' })
       .send({
         user: grantedUser.email,
-        right: 'guest'
+        role: 'operator'
       });
 
     let organizationgr = await Organization.findOne({
-      company: organization.company
+      name: organization.name
     }).exec();
-    expect(organization.users.find(e => e.userId === grantedUser._id && e.rights.include('operator'))).toBe(true);
+    expect(organizationgr?.users.find(e => e.userId.toString() === grantedUser._id.toString() && e.permissions.includes('operator'))).toBeDefined();
     expect(res.statusCode).toBe(200);
 
     const resRemove = await request(app)
-      .delete('/organization/promote')
+      .post(`/organization/${organization.name}/demote`)
       .auth(token, { type: 'bearer' })
       .send({
-        user: grantedUser.email,
-        remove: true
+        user: grantedUser.email
       });
 
     organizationgr = await Organization.findOne({
-      company: organization.company
+      name: organization.name
     }).exec();
-    expect(organization.users.find(e => e.userId === grantedUser._id)).toBe(false);
+    expect(organizationgr?.users.find(e => e.userId.toString() === grantedUser._id.toString())).not.toBeDefined();
     expect(resRemove.statusCode).toBe(200);
+    await Organization.deleteOne({ name: organization.name }).exec();
   });
 
-  it('transfer ownership of an organization', async () => {
-
-  });
+  it.todo('transfer ownership of an organization');
 
   it.todo('add a robot to an organization');
 

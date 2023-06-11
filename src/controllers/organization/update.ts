@@ -40,7 +40,7 @@ const update: RequestHandler<any> = async (
     if (!organization) { throw new NotFound(); };
 
     // verify if the user is owner of the organization
-    if (!organization.users.find(e => e.userId === userId && e.permissions.includes('owner'))) { throw new Forbidden(); };
+    if (!organization.users.find(e => e.userId.toString() === userId && e.permissions.includes('owner'))) { throw new Forbidden(); };
 
     // here update the organization details
     const updatedOrganization = await Organization.findOneAndUpdate(
@@ -53,7 +53,7 @@ const update: RequestHandler<any> = async (
       throw new Error('Failed to update organization');
     }
 
-    res.send({
+    return res.json({
       message: 'OK'
     });
   } catch (error: any) {
