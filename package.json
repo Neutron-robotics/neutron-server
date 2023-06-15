@@ -29,6 +29,7 @@
     "fix-lint": "./node_modules/eslint/bin/eslint.js  src --ext .ts --fix"
   },
   "dependencies": {
+    "@types/multer": "^1.4.7",
     "bcrypt": "^5.1.0",
     "body-parser": "1.20.2",
     "compression": "1.7.4",
@@ -38,6 +39,7 @@
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "7.0.3",
+    "multer": "^1.4.5-lts.1",
     "swagger-ui-express": "4.6.2",
     "winston": "3.8.2",
     "winston-transport": "^4.5.0"
