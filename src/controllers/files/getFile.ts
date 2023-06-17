@@ -16,7 +16,7 @@ const getFile: RequestHandler<any> = async (req: Request<GetFileParams, {}, {}>,
   const { fileId } = req.params;
 
   try {
-    const filePath = path.join(__dirname, process.env.FILE_STORAGE ?? '', fileId);
+    const filePath = path.join(process.cwd(), process.env.FILE_STORAGE ?? '', fileId);
     res.download(filePath, err => {
       if (err) {
         throw new BadRequest(err.message);
