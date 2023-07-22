@@ -19,6 +19,7 @@ interface RegisterBody {
 }
 
 const register: RequestHandler = async (req: Request<{}, {}, RegisterBody>, res, next) => {
+  console.log('Toto');
   const { body } = req;
   try {
     const activationKey = randomUUID();

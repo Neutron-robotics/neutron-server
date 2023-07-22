@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import path from 'path';
 import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 import ApplicationError from './errors/application-error';
 import routes from './routes';
 import logger from './logger';
@@ -25,6 +26,7 @@ function logResponseTime(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
+app.use(cors());
 app.use(logResponseTime);
 
 app.use(compression() as any);

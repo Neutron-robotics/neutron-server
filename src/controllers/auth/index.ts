@@ -10,6 +10,10 @@ import update from './update';
 const useAuthentification = (router: Router) => {
   router.post('/auth/login', login);
   router.post('/auth/register', register);
+
+  // router.post('/auth/refresh-token', register);
+  // router.post('/auth/logout', register);
+
   router.post('/auth/verify', verify);
   router.get('/auth/me', me);
   router.post('/auth/reset', reset);

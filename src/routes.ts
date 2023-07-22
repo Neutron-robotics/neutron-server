@@ -8,6 +8,7 @@ import useAuthentification from './controllers/auth';
 import useAdminController from './controllers/admin';
 import useOrganization from './controllers/organization';
 import useFileController from './controllers/files';
+import useUserController from './controllers/user';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -22,6 +23,9 @@ useAuthentification(router);
 useAdminController(router);
 useOrganization(router);
 useFileController(router);
+useUserController(router);
+
+console.log('Routes imported');
 
 // Dev routes
 if (process.env.NODE_ENV === 'development') {

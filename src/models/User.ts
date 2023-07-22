@@ -12,6 +12,7 @@ export interface IUser extends Document {
   password: string;
   firstName: string;
   lastName: string;
+  imgUrl: string
   activationKey: string;
   active: boolean;
   roles: string[];
@@ -46,6 +47,9 @@ const userSchema = new Schema<IUser>(
     lastName: {
       type: String,
       maxlength: 50
+    },
+    imgUrl: {
+      type: String
     },
     activationKey: {
       type: String,
