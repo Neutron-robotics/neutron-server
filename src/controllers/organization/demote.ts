@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import User from '../../models/User';
+import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization from '../../models/Organization';
@@ -35,7 +35,7 @@ const demote: RequestHandler<any> = async (
     if (!organization) { throw new NotFound(); };
 
     // verify if the user is owner of the organization
-    if (!organization.users.find(e => e.userId.toString() === userId && e.permissions.includes('owner'))) { throw new Forbidden(); };
+    if (!organization.isUserAdmin(userId)) { throw new Forbidden(); };
 
     // find the user on which the operation will apply
     const userToBeDemoted = await User.findOne({ email: body.user }).exec();
@@ -54,4 +54,4 @@ const demote: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   demote,
   { validation: { body: demoteSchemaBody, params: demoteSchemaQuery } }
-), { roles: ['verified'] });
+), { roles: [UserRole.Verified] });

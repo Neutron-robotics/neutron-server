@@ -1,6 +1,6 @@
 import { Request, RequestHandler } from 'express';
 import Joi from 'joi';
-import User from '../../models/User';
+import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 
@@ -31,5 +31,5 @@ export default withAuth(
     getUserById,
     { validation: { params: getUserSchemaParams } }
   ),
-  { roles: ['verified'] }
+  { roles: [UserRole.Verified] }
 );

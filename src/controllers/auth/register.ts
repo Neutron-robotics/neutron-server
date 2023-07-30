@@ -4,7 +4,7 @@ import { Request, RequestHandler } from 'express';
 import User from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 
-export const registerSchema = Joi.object().keys({
+const registerSchema = Joi.object().keys({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   password: Joi.string().required(),
@@ -19,7 +19,6 @@ interface RegisterBody {
 }
 
 const register: RequestHandler = async (req: Request<{}, {}, RegisterBody>, res, next) => {
-  console.log('Toto');
   const { body } = req;
   try {
     const activationKey = randomUUID();

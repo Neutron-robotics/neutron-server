@@ -4,6 +4,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization from '../../models/Organization';
 import { Forbidden, NotFound } from '../../errors/bad-request';
+import { UserRole } from '../../models/User';
 
 const updateSchemaBody = Joi.object().keys({
   name: Joi.string().optional(),
@@ -40,7 +41,7 @@ const update: RequestHandler<any> = async (
     if (!organization) { throw new NotFound(); };
 
     // verify if the user is owner of the organization
-    if (!organization.users.find(e => e.userId.toString() === userId && e.permissions.includes('owner'))) { throw new Forbidden(); };
+    if (!organization.isUserAdmin(userId)) { throw new Forbidden(); };
 
     // here update the organization details
     const updatedOrganization = await Organization.findOneAndUpdate(
@@ -64,4 +65,4 @@ const update: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   update,
   { validation: { body: updateSchemaBody, params: updateSchemaParams } }
-), { roles: ['verified'] });
+), { roles: [UserRole.Verified] });

@@ -1,5 +1,5 @@
 import { Request, RequestHandler } from 'express';
-import User from '../../models/User';
+import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 
@@ -15,4 +15,4 @@ const users: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
   }
 };
 
-export default withAuth(requestMiddleware(users), { roles: ['admin'] });
+export default withAuth(requestMiddleware(users), { roles: [UserRole.Admin] });

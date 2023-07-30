@@ -2,7 +2,8 @@ import { Request, RequestHandler } from 'express';
 import Joi from 'joi';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
-import Organization from '../../models/Organization';
+import Organization, { OrganizationPermissions } from '../../models/Organization';
+import { UserRole } from '../../models/User';
 
 const createSchema = Joi.object().keys({
   name: Joi.string().required(),
@@ -27,7 +28,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
       ...body,
       users: [{
         userId,
-        permissions: ['owner']
+        permissions: [OrganizationPermissions.Owner]
       }]
     });
     await organization.save();
@@ -39,4 +40,4 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
   }
 };
 
-export default withAuth(requestMiddleware(create, { validation: { body: createSchema } }), { roles: ['verified'] });
+export default withAuth(requestMiddleware(create, { validation: { body: createSchema } }), { roles: [UserRole.Verified] });
