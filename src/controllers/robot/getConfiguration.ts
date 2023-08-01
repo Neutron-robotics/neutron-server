@@ -4,23 +4,23 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { BadRequest } from '../../errors/bad-request';
 import Robot from '../../models/Robot';
 
-const getConfigurationSchemaBody = Joi.object().keys({
+const getConfigurationSchemaParams = Joi.object().keys({
   secretKey: Joi.string().required()
 });
 
-interface GetConfigurationBody {
+interface GetConfigurationParams {
     secretKey: string
 }
 
 const getConfiguration: RequestHandler<any> = async (
-  req: Request<{}, {}, GetConfigurationBody>,
+  req: Request<GetConfigurationParams, {}, {}>,
   res,
   next
 ) => {
-  const { body } = req;
+  const { params } = req;
 
   try {
-    const robot = await Robot.findOne({ secretKey: body.secretKey }).lean().exec();
+    const robot = await Robot.findOne({ secretKey: params.secretKey }).lean().exec();
     if (!robot) {
       throw new BadRequest('Robot not found');
     }
@@ -35,5 +35,5 @@ const getConfiguration: RequestHandler<any> = async (
 
 export default requestMiddleware(
   getConfiguration,
-  { validation: { body: getConfigurationSchemaBody } }
+  { validation: { params: getConfigurationSchemaParams } }
 );

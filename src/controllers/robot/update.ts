@@ -15,6 +15,10 @@ const updateRobotSchemaBody = Joi.object().keys({
   connectionContextType: Joi.string().valid(Object.values(ConnectionContextType))
 });
 
+const updateRobotSchemaParam = Joi.object().keys({
+  robotId: Joi.string().required()
+});
+
 interface UpdateBody {
     name: string | undefined
     imgUrl: string | undefined
@@ -26,7 +30,7 @@ interface UpdateQuery {
     robotId: string
 }
 
-const getConfiguration: RequestHandler<any> = async (
+const update: RequestHandler<any> = async (
   req: Request<UpdateQuery, {}, UpdateBody>,
   res,
   next
@@ -63,6 +67,6 @@ const getConfiguration: RequestHandler<any> = async (
 };
 
 export default withAuth(requestMiddleware(
-  getConfiguration,
-  { validation: { body: updateRobotSchemaBody } }
+  update,
+  { validation: { body: updateRobotSchemaBody, params: updateRobotSchemaParam } }
 ), { roles: [UserRole.Verified] });

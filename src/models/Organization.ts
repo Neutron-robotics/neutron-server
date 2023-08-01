@@ -93,7 +93,7 @@ OrganizationSchema.statics.getByRobotId = async function (robotId) {
 OrganizationSchema.method<IOrganization>(
   'isUserAdmin',
   function (userId: string) {
-    const user: IUserRelation | undefined = this.users.find(e => e.userId === userId);
+    const user: IUserRelation | undefined = this.users.find(e => e.userId.toString() === userId.toString());
     if (!user) { return false; };
 
     return !!user.permissions.find(
