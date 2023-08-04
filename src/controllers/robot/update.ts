@@ -12,7 +12,7 @@ const updateRobotSchemaBody = Joi.object().keys({
   name: Joi.string(),
   imgUrl: Joi.string().uri(),
   description: Joi.string(),
-  connectionContextType: Joi.string().valid(Object.values(ConnectionContextType))
+  connectionContextType: Joi.string().valid(...Object.values(ConnectionContextType))
 });
 
 const updateRobotSchemaParam = Joi.object().keys({
@@ -39,17 +39,17 @@ const update: RequestHandler<any> = async (
   const userId = (req as any).user.sub as string;
 
   try {
-    const robot = await Robot.findOne({ id: params.robotId }).exec();
+    const robot = await Robot.findOne({ _id: params.robotId }).exec();
     if (!robot) {
       throw new BadRequest('Robot not found');
     }
 
-    const organization = Organization.getByRobotId(robot.id);
+    const organization = await Organization.getByRobotId(robot.id);
     if (!organization) {
       throw new ApplicationError('The robot does not belong to an organization');
     }
 
-    if (!organization.users.some(e => e.userId === userId)) {
+    if (!organization.users.some(e => e.userId.toString() === userId)) {
       throw new Forbidden('You do not belong to the organization');
     }
 
@@ -57,7 +57,7 @@ const update: RequestHandler<any> = async (
     if (body.imgUrl) { robot.imgUrl = body.imgUrl; }
     if (body.description) { robot.description = body.description; }
     if (body.connectionContextType) { robot.context = body.connectionContextType; }
-
+    await robot.save();
     res.json({
       message: 'OK'
     });

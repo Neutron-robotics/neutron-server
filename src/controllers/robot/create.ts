@@ -10,17 +10,17 @@ import { UserRole } from '../../models/User';
 
 const partsSchema = Joi.object().keys({
   type: Joi.string().required(),
-  category: Joi.string().valid(Object.values(RobotPartCategory)).required(),
+  category: Joi.string().valid(...Object.values(RobotPartCategory)).required(),
   name: Joi.string().required(),
   imgUrl: Joi.string()
 });
 
 const createSchema = Joi.object().keys({
   name: Joi.string().required(),
-  parts: partsSchema,
+  parts: Joi.array().items(partsSchema).optional(),
   imgUrl: Joi.string().uri().optional(),
   description: Joi.string(),
-  connectionContextType: Joi.string().valid(Object.values(ConnectionContextType)).required(),
+  connectionContextType: Joi.string().valid(...Object.values(ConnectionContextType)).required(),
   organizationId: Joi.string().required()
 });
 
@@ -38,7 +38,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateRobotBody>, res
   const userId = (req as any).user.sub as string;
 
   try {
-    const organization = await Organization.findOne({ id: body.organizationId }).exec();
+    const organization = await Organization.findOne({ _id: body.organizationId }).exec();
     if (!organization || organization.users.find(e => e.userId === userId)) {
       throw new BadRequest('This organization does not exist');
     }
@@ -53,7 +53,8 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateRobotBody>, res
       context: body.connectionContextType
     });
     await robot.save();
-    organization.robots.push(organization._id);
+    organization.robots.push(robot._id);
+    await organization.save();
     res.send({
       message: 'OK'
     });

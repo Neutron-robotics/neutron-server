@@ -8,7 +8,7 @@ import Organization from '../../src/models/Organization';
 const makeRobot = async (token: string, parts: IRobotPart[], organizationName?: string) => {
   const organization = organizationName ? await Organization.findOne({ name: organizationName }).exec() : await makeOrganization(token);
 
-  const robotName = `test organization ${generateRandomString(6)}`;
+  const robotName = `test robot ${generateRandomString(6)}`;
   await request(app)
     .post('/robot/create')
     .auth(token, { type: 'bearer' })
@@ -18,7 +18,7 @@ const makeRobot = async (token: string, parts: IRobotPart[], organizationName?: 
       imgUrl: 'https://static.hugosoft.com/robots/test.png',
       description: 'This is a test robot',
       connectionContextType: 'ros2',
-      organizationId: organization
+      organizationId: organization?.id
     });
 
   const robot = await Robot.findOne({ name: robotName }).exec();

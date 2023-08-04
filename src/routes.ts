@@ -9,6 +9,7 @@ import useAdminController from './controllers/admin';
 import useOrganization from './controllers/organization';
 import useFileController from './controllers/files';
 import useUserController from './controllers/user';
+import useRobotController from './controllers/robot';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -24,6 +25,7 @@ useAdminController(router);
 useOrganization(router);
 useFileController(router);
 useUserController(router);
+useRobotController(router);
 
 console.log('Routes imported');
 
