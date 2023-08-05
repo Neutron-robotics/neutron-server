@@ -19,7 +19,7 @@ const makeOrganization = async (token: string) => {
   const organization = await Organization.findOne({
     name
   }).exec();
-  if (!organization) { throw new Error('The test user failed to be created'); };
+  if (!organization) { throw new Error('The test organization failed to be created'); };
 
   return organization;
 };

@@ -40,6 +40,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: yarn
+      - run: mkdir data
       - run: bash scripts/test.sh
       - run: yarn
       - run: yarn test

@@ -12,6 +12,7 @@
   "rules": {
     "consistent-return": "off",
     "max-len": "off",
+    "no-shadow": "off",
     "no-plusplus": "off",
     "import/no-extraneous-dependencies": "off",
     "import/extensions": [

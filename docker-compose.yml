@@ -13,10 +13,14 @@ services:
       - MONGO_URL=mongodb://host.docker.internal:27017/neutron
     volumes:
       - ./logs:/logs
+      - app-volume:/app/uploads
+
     networks:
       - app-network
     ports:
       - "3000:3000"
+volumes:
+  app-volume:
 
 networks:
   app-network:

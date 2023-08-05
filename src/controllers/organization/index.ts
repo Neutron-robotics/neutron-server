@@ -5,10 +5,12 @@ import me from './me';
 import promote from './promote';
 import demote from './demote';
 import update from './update';
+import getMember from './getMember';
 
 const useOrganization = (router: Router) => {
   router.post('/organization/create', create);
   router.get('/organization/me', me);
+  router.get('/organization/:organization/getMember/:id', getMember);
 
   router.post('/organization/:organization/update', update);
   router.post('/organization/:organization/promote', promote);

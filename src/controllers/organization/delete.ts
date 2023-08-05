@@ -4,6 +4,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization from '../../models/Organization';
 import { Forbidden, NotFound } from '../../errors/bad-request';
+import { UserRole } from '../../models/User';
 
 const deleteSchemaQuery = Joi.object().keys({
   organization: Joi.string().required()
@@ -19,7 +20,7 @@ const deleteOrganization: RequestHandler<any> = async (req: Request<DeleteQuery>
   try {
     const organization = await Organization.findOne({ name: req.params.organization }).exec();
     if (!organization) { throw (new NotFound('organization not found')); };
-    if (!organization.users.find(e => e.userId.toString() === userId && e.permissions.includes('owner'))) {
+    if (!organization.isUserAdmin(userId)) {
       throw new Forbidden();
     }
     organization.active = false;
@@ -32,4 +33,4 @@ const deleteOrganization: RequestHandler<any> = async (req: Request<DeleteQuery>
   }
 };
 
-export default withAuth(requestMiddleware(deleteOrganization, { validation: { params: deleteSchemaQuery } }), { roles: ['verified'] });
+export default withAuth(requestMiddleware(deleteOrganization, { validation: { params: deleteSchemaQuery } }), { roles: [UserRole.Verified] });

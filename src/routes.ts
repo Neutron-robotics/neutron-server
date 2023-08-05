@@ -7,6 +7,9 @@ import path from 'path';
 import useAuthentification from './controllers/auth';
 import useAdminController from './controllers/admin';
 import useOrganization from './controllers/organization';
+import useFileController from './controllers/files';
+import useUserController from './controllers/user';
+import useRobotController from './controllers/robot';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -20,6 +23,9 @@ const SWAGGER_YAML_FILEPATH = path.join(__dirname, '../openapi.yml');
 useAuthentification(router);
 useAdminController(router);
 useOrganization(router);
+useFileController(router);
+useUserController(router);
+useRobotController(router);
 
 // Dev routes
 if (process.env.NODE_ENV === 'development') {

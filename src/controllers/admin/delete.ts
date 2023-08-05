@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import User from '../../models/User';
+import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import { NotFound } from '../../errors/bad-request';
@@ -29,4 +29,4 @@ const deleteUser: RequestHandler = async (req: Request<{}, {}, DeleteBody>, res,
   }
 };
 
-export default withAuth(requestMiddleware(deleteUser, { validation: { body: deleteSchema } }), { roles: ['admin'] });
+export default withAuth(requestMiddleware(deleteUser, { validation: { body: deleteSchema } }), { roles: [UserRole.Admin] });

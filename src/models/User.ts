@@ -5,13 +5,18 @@ import {
 import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
 import logger from '../logger';
 
-const roles = ['user', 'admin', 'verified'];
+export enum UserRole {
+  User = 'user',
+  Admin = 'admin',
+  Verified = 'verified'
+}
 
 export interface IUser extends Document {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
+  imgUrl: string
   activationKey: string;
   active: boolean;
   roles: string[];
@@ -47,6 +52,9 @@ const userSchema = new Schema<IUser>(
       type: String,
       maxlength: 50
     },
+    imgUrl: {
+      type: String
+    },
     activationKey: {
       type: String,
       unique: true,
@@ -65,8 +73,8 @@ const userSchema = new Schema<IUser>(
     },
     roles: {
       type: [String],
-      default: ['user'],
-      enum: roles
+      default: [UserRole.User],
+      enum: UserRole
     }
   },
   {

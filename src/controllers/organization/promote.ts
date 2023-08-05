@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import User from '../../models/User';
+import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization from '../../models/Organization';
@@ -81,4 +81,4 @@ const promote: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   promote,
   { validation: { body: promoteSchemaBody, params: promoteSchemaParams } }
-), { roles: ['verified'] });
+), { roles: [UserRole.Verified] });

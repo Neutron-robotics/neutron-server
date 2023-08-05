@@ -1,9 +1,9 @@
 import {
   RequestHandler, Request, Response, NextFunction
 } from 'express';
-import { verify, VerifyCallback } from 'jsonwebtoken';
+import { verify } from 'jsonwebtoken';
 import { IUser } from '../models/User';
-import { BadRequest, Forbidden, Unauthorized } from '../errors/bad-request';
+import { Forbidden, Unauthorized } from '../errors/bad-request';
 
 interface AuthOptions {
     roles?: string[]

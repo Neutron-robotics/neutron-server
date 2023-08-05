@@ -3,7 +3,13 @@ import {
 } from 'mongoose';
 import { BadRequest } from '../errors/bad-request';
 
-const roles = ['guest', 'operator', 'analyst', 'admin', 'owner'];
+export enum OrganizationPermissions {
+  Guest = 'guest',
+  Operator = 'operator',
+  Analyst = 'analyst',
+  Owner = 'owner',
+  Admin = 'admin'
+}
 
 interface IUserRelation {
     userId: string,
@@ -15,16 +21,21 @@ export interface IOrganization extends Document {
     company: string;
     description: string;
     imgUrl: string;
-    robots: [];
+    robots: string[];
     active: boolean;
     users: IUserRelation[]
 }
 
-interface IOrganizationModel extends Model<IOrganization> {
-  checkDuplicateError(err: any): any
+interface IOrganizationDocument extends IOrganization {
+  isUserAdmin(userId: string): boolean
 }
 
-const OrganizationSchema = new Schema<IOrganization>({
+interface IOrganizationModel extends Model<IOrganizationDocument> {
+  checkDuplicateError(err: any): any
+  getByRobotId(id: string): IOrganizationDocument
+}
+
+const OrganizationSchema = new Schema<IOrganizationDocument>({
   name: {
     type: String,
     required: true,
@@ -40,10 +51,10 @@ const OrganizationSchema = new Schema<IOrganization>({
   imgUrl: {
     type: String
   },
-  robots: {
-    type: [],
-    default: []
-  },
+  robots: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Robot'
+  }],
   active: {
     type: Boolean,
     default: true
@@ -55,7 +66,7 @@ const OrganizationSchema = new Schema<IOrganization>({
     },
     permissions: {
       type: [String],
-      enum: roles
+      enum: Object.values(OrganizationPermissions)
     }
   }]
 });
@@ -67,6 +78,31 @@ OrganizationSchema.statics.checkDuplicateError = function (err: any) {
   return err;
 };
 
-const Organization = model<IOrganization, IOrganizationModel>('Organization', OrganizationSchema);
+OrganizationSchema.statics.getByRobotId = async function (robotId) {
+  try {
+    const organization = await this.findOne({ robots: { $elemMatch: { $eq: robotId } } });
+    if (!organization) {
+      throw new BadRequest('Organization not found for the provided robotId.');
+    }
+    return organization;
+  } catch (error: any) {
+    throw new BadRequest(`Error while fetching the organization: ${error.message}`);
+  }
+};
+
+OrganizationSchema.method<IOrganization>(
+  'isUserAdmin',
+  function (userId: string) {
+    const user: IUserRelation | undefined = this.users.find(e => e.userId.toString() === userId.toString());
+    if (!user) { return false; };
+
+    return !!user.permissions.find(
+      e => e === OrganizationPermissions.Owner
+      || e === OrganizationPermissions.Admin
+    );
+  }
+);
+
+const Organization = model<IOrganizationDocument, IOrganizationModel>('Organization', OrganizationSchema);
 
 export default Organization;

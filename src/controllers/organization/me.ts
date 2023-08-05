@@ -1,5 +1,5 @@
 import { Request, RequestHandler } from 'express';
-import User from '../../models/User';
+import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import { NotFound } from '../../errors/bad-request';
@@ -28,4 +28,4 @@ const me: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
   }
 };
 
-export default withAuth(requestMiddleware(me), { roles: ['verified'] });
+export default withAuth(requestMiddleware(me), { roles: [UserRole.Verified] });
