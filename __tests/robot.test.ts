@@ -114,15 +114,17 @@ describe('robot tests', () => {
   });
 
   it('delete a robot', async () => {
-    const { robot } = await makeRobot(token, []);
+    const { robot, organization } = await makeRobot(token, []);
 
     const res = await request(app)
       .delete(`/robot/${robot.id}`)
       .auth(token, { type: 'bearer' });
 
+    const deletedRobot = await Robot.findOne({ _id: robot.id });
+    const organizationWithoutRobot = await Organization.findOne({ _id: organization?.id });
     expect(res.statusCode).toBe(200);
-    const deletedRobot = Robot.findOne({ _id: robot.id });
-    expect(deletedRobot).not.toBeDefined();
+    expect(deletedRobot).toBeNull();
+    expect(organizationWithoutRobot?.robots.includes(robot.id)).toBeFalsy();
   });
 
   it('get robot configuration', async () => {

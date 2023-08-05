@@ -24,13 +24,13 @@ const deleteRobot: RequestHandler<any> = async (
   const userId = (req as any).user.sub as string;
 
   try {
-    const organization = Organization.getByRobotId(params.robotId);
+    const organization = await Organization.getByRobotId(params.robotId);
     if (!organization) { throw new BadRequest('Organization not found'); };
     if (!organization.isUserAdmin(userId)) {
       throw new Forbidden('You need to be an organization admin');
     }
 
-    await Robot.deleteOne({ id: params.robotId }).exec();
+    await Robot.deleteOne({ _id: params.robotId }).exec();
     return res.json({
       message: 'OK'
     });

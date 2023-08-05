@@ -80,7 +80,7 @@ OrganizationSchema.statics.checkDuplicateError = function (err: any) {
 
 OrganizationSchema.statics.getByRobotId = async function (robotId) {
   try {
-    const organization = await this.findOne({ robots: { $elemMatch: { $eq: robotId } } }).exec();
+    const organization = await this.findOne({ robots: { $elemMatch: { $eq: robotId } } });
     if (!organization) {
       throw new BadRequest('Organization not found for the provided robotId.');
     }

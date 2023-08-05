@@ -27,8 +27,6 @@ useFileController(router);
 useUserController(router);
 useRobotController(router);
 
-console.log('Routes imported');
-
 // Dev routes
 if (process.env.NODE_ENV === 'development') {
   const swaggerYaml = yaml.load(fs.readFileSync(SWAGGER_YAML_FILEPATH, 'utf8')) as Object;

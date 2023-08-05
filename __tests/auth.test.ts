@@ -123,6 +123,29 @@ describe('Authentication controller', () => {
     await deleteUser(user.email);
   });
 
+  it('refresh jwt', async () => {
+    const { user, password } = await makeUser(true);
+    const token = await withLogin(user.email, password);
+
+    const resp = await request(app)
+      .post('/auth/refresh-token')
+      .auth(token, { type: 'bearer' });
+
+    const refreshedToken = resp.body.token;
+
+    const res = await request(app)
+      .get('/auth/me')
+      .auth(refreshedToken, { type: 'bearer' });
+
+    const { me } = res.body;
+    expect(res.statusCode).toBe(200);
+    expect(me.firstName).toBe(user?.firstName);
+    expect(me.lastName).toBe(user?.lastName);
+    expect(me.roles).toStrictEqual(['user', 'verified']);
+    expect(me.email).toBe(user?.email);
+    await deleteUser(user.email);
+  });
+
   it('fails to register with duplicate email', async () => {
     const { user } = await makeUser(false);
     const resp = await request(app)

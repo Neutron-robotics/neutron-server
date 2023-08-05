@@ -1,6 +1,7 @@
 import {
-  Document, Model, Schema, model
+  Document, Schema, model
 } from 'mongoose';
+import Organization from './Organization';
 
 export enum RobotPartCategory {
     Actuator = 'actuator',
@@ -76,6 +77,18 @@ const RobotSchema = new Schema<IRobot>({
   context: {
     type: String,
     enum: Object.values(ConnectionContextType)
+  }
+});
+
+RobotSchema.post('deleteOne', async function postDelete(doc, next) {
+  try {
+    const robotId = this.getFilter()['_id'];
+    const organization = await Organization.getByRobotId(robotId);
+    organization.robots = organization.robots.filter(e => e.toString() !== robotId.toString());
+    await organization.save();
+    return next();
+  } catch (err: any) {
+    return next(err);
   }
 });
 
