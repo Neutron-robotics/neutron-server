@@ -8,7 +8,7 @@ const upload: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
   if (!file) {
     return next(new BadRequest('No file is found'));
   }
-  res.json({ url: `${process.env.HOSTNAME}/file/${file.filename}` });
+  res.json({ url: `http://${process.env.BASE_URI}/file/${file.filename}` });
 };
 
 export default requestMiddleware(upload);

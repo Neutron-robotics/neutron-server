@@ -10,7 +10,7 @@ import getMember from './getMember';
 const useOrganization = (router: Router) => {
   router.post('/organization/create', create);
   router.get('/organization/me', me);
-  router.get('/organization/:organization/getMember/:id', getMember);
+  router.get('/organization/:organization/getMember', getMember);
 
   router.post('/organization/:organization/update', update);
   router.post('/organization/:organization/promote', promote);
