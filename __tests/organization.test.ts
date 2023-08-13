@@ -7,6 +7,8 @@ import { makeUser, withLogin } from './__utils__/user_setup';
 import { makeOrganization } from './__utils__/organization_setup';
 import Organization from '../src/models/Organization';
 import { generateRandomString } from './__utils__/string';
+import { makeRobot } from './__utils__/robot_setup';
+import { RobotPartCategory } from '../src/models/Robot';
 
 describe('organization tests', () => {
   let user: any = {};
@@ -316,5 +318,38 @@ describe('organization tests', () => {
       firstName: granterUser.firstName,
       lastName: granterUser.lastName
     });
+  });
+
+  it('get organization robots', async () => {
+    const partr1name = generateRandomString(4);
+    const partr2name = generateRandomString(4);
+    const { robot, organization } = await makeRobot(token, [{
+      type: 'camera',
+      category: RobotPartCategory.Vison,
+      name: `P-${partr1name}`,
+      imgUrl: `localhost:3003/${generateRandomString(4)}`
+    }]);
+    const { robot: secondRobot } = await makeRobot(token, [{
+      type: 'robot base',
+      category: RobotPartCategory.Base,
+      name: `P-${partr2name}`,
+      imgUrl: `localhost:3003/${generateRandomString(4)}`
+    }], organization?.name);
+
+    const res = await request(app)
+      .get(`/organization/${organization?.name}/robots`)
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.robots.length).toBe(2);
+    expect(res.body.robots[0].name).toBe(robot.name);
+    expect(res.body.robots[0].description).toBe(robot.description);
+    expect(res.body.robots[0].secretKey).not.toBeDefined();
+    expect(res.body.robots[0].parts.length).toBe(1);
+
+    expect(res.body.robots[1].name).toBe(secondRobot.name);
+    expect(res.body.robots[1].description).toBe(secondRobot.description);
+    expect(res.body.robots[1].secretKey).not.toBeDefined();
+    expect(res.body.robots[1].parts.length).toBe(1);
   });
 });
