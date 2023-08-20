@@ -8,7 +8,7 @@ import { makeOrganization } from './__utils__/organization_setup';
 import Organization from '../src/models/Organization';
 import { generateRandomString } from './__utils__/string';
 import { makeRobot } from './__utils__/robot_setup';
-import { RobotPartCategory } from '../src/models/Robot';
+import { RobotPartCategory } from '../src/models/RobotPart';
 
 describe('organization tests', () => {
   let user: any = {};

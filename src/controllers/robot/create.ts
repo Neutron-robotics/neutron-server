@@ -1,14 +1,15 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import { randomUUID } from 'crypto';
-import Robot, { ConnectionContextType, IRobotPart, RobotPartCategory } from '../../models/Robot';
+import Robot, { ConnectionContextType } from '../../models/Robot';
 import requestMiddleware from '../../middleware/request-middleware';
 import Organization from '../../models/Organization';
 import { BadRequest } from '../../errors/bad-request';
 import { withAuth } from '../../middleware/withAuth';
 import { UserRole } from '../../models/User';
+import { IRobotPart, RobotPartCategory } from '../../models/RobotPart';
 
-const partsSchema = Joi.object().keys({
+export const partsSchema = Joi.object().keys({
   type: Joi.string().required(),
   category: Joi.string().valid(...Object.values(RobotPartCategory)).required(),
   name: Joi.string().required(),

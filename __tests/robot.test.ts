@@ -9,6 +9,7 @@ import app from '../src/app';
 import { makeOrganization } from './__utils__/organization_setup';
 import Robot, { ConnectionContextType } from '../src/models/Robot';
 import Organization from '../src/models/Organization';
+import { RobotPartCategory } from '../src/models/RobotPart';
 
 describe('robot tests', () => {
   let user: any = {};
@@ -168,5 +169,111 @@ describe('robot tests', () => {
     expect(robotUpdated?.description).toBe('This is an updated test robot');
     expect(robotUpdated?.imgUrl).toBe('https://static.hugosoft.com/robots/testupdated.png');
     expect(robotUpdated?.context).toBe(ConnectionContextType.Tcp);
+  });
+});
+
+describe('part tests', () => {
+  let user: any = {};
+  let token: string = '';
+  const result = dotenv.config();
+  if (result.error) {
+    dotenv.config({ path: '.env.default' });
+  }
+
+  beforeEach(async () => {
+    await mongoose.connect(process.env.MONGO_URL ?? '');
+    const { user: usr, password } = await makeUser(true);
+    token = await withLogin(usr.email, password);
+    user = usr;
+  });
+
+  afterEach(async () => {
+    User.deleteOne({ email: user.email });
+    await mongoose.connection.close();
+  });
+
+  it('Create a part', async () => {
+    const { robot } = await makeRobot(token, []);
+
+    const res = await request(app)
+      .post(`/robot/${robot.id}/part/create`)
+      .auth(token, { type: 'bearer' })
+      .send({
+        type: 'test',
+        imgUrl: 'https://static.hugosoft.com/part/testpart.png',
+        name: 'My test part',
+        category: RobotPartCategory.Actuator
+      });
+
+    const robotUpdated = await Robot.findOne({ _id: robot.id }).exec();
+    expect(res.statusCode).toBe(200);
+    expect(robotUpdated?.parts.length).toBe(1);
+
+    const part = robotUpdated?.parts[0];
+    expect(part?.type).toBe('test');
+    expect(part?.imgUrl).toBe('https://static.hugosoft.com/part/testpart.png');
+    expect(part?.name).toBe('My test part');
+    expect(part?.category).toBe(RobotPartCategory.Actuator);
+  });
+
+  it('Update a part', async () => {
+    const { robot } = await makeRobot(token, [
+      {
+        type: 'RGBCamera',
+        category: RobotPartCategory.Vison,
+        name: 'test camera',
+        imgUrl: 'https://static.neutron.com/robot/w.png'
+      },
+      {
+        type: 'Grapper',
+        category: RobotPartCategory.Actuator,
+        name: 'Robot grab grab',
+        imgUrl: 'https://static.neutron.com/robot/wdjxsiushf.png'
+      }
+    ]);
+
+    const robotCreated = await Robot.findOne({ _id: robot.id });
+    const res = await request(app)
+      .post(`/robot/${robot.id}/part/${robotCreated?.parts[0]._id}/update`)
+      .auth(token, { type: 'bearer' })
+      .send({
+        type: 'test',
+        imgUrl: 'https://static.hugosoft.com/part/testpart.png',
+        name: 'My test part',
+        category: RobotPartCategory.Actuator
+      });
+
+    const robotUpdated = await Robot.findOne({ _id: robot.id });
+    const partUpdated = robotUpdated?.parts[0];
+    expect(res.statusCode).toBe(200);
+    expect(partUpdated?.type).toBe('test');
+    expect(partUpdated?.imgUrl).toBe('https://static.hugosoft.com/part/testpart.png');
+    expect(partUpdated?.name).toBe('My test part');
+    expect(partUpdated?.category).toBe(RobotPartCategory.Actuator);
+  });
+
+  it('Delete a part', async () => {
+    const { robot } = await makeRobot(token, [
+      {
+        type: 'RGBCamera',
+        category: RobotPartCategory.Vison,
+        name: 'test camera',
+        imgUrl: 'https://static.neutron.com/robot/w.png'
+      },
+      {
+        type: 'Grapper',
+        category: RobotPartCategory.Actuator,
+        name: 'Robot grab grab',
+        imgUrl: 'https://static.neutron.com/robot/wdjxsiushf.png'
+      }
+    ]);
+
+    const res = await request(app)
+      .delete(`/robot/${robot.id}/part/${robot?.parts[0]._id}`)
+      .auth(token, { type: 'bearer' });
+
+    const robotPartDeleted = await Robot.findOne({ _id: robot.id });
+    expect(res.statusCode).toBe(200);
+    expect(robotPartDeleted?.parts.length).toBe(1);
   });
 });

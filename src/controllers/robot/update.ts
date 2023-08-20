@@ -2,7 +2,7 @@ import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import requestMiddleware from '../../middleware/request-middleware';
 import { BadRequest, Forbidden } from '../../errors/bad-request';
-import Robot, { ConnectionContextType, RobotPartCategory } from '../../models/Robot';
+import Robot, { ConnectionContextType } from '../../models/Robot';
 import { withAuth } from '../../middleware/withAuth';
 import { UserRole } from '../../models/User';
 import Organization from '../../models/Organization';

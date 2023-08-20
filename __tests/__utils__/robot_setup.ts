@@ -1,11 +1,19 @@
 import request from 'supertest';
 import app from '../../src/app';
 import { generateRandomString } from './string';
-import Robot, { IRobotPart } from '../../src/models/Robot';
+import Robot from '../../src/models/Robot';
 import { makeOrganization } from './organization_setup';
 import Organization from '../../src/models/Organization';
+import { RobotPartCategory } from '../../src/models/RobotPart';
 
-const makeRobot = async (token: string, parts: IRobotPart[], organizationName?: string) => {
+export interface IRobotPartModel {
+  type: string
+    category: RobotPartCategory
+    name: string
+    imgUrl: string
+}
+
+const makeRobot = async (token: string, parts: IRobotPartModel[], organizationName?: string) => {
   const organization = organizationName ? await Organization.findOne({ name: organizationName }).exec() : await makeOrganization(token);
 
   const robotName = `test robot ${generateRandomString(6)}`;

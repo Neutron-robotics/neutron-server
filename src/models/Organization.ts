@@ -28,6 +28,7 @@ export interface IOrganization extends Document {
 
 interface IOrganizationDocument extends IOrganization {
   isUserAdmin(userId: string): boolean
+  isUserAllowed(userId: string, permissions: OrganizationPermissions[]): boolean
 }
 
 interface IOrganizationModel extends Model<IOrganizationDocument> {
@@ -100,6 +101,19 @@ OrganizationSchema.method<IOrganization>(
       e => e === OrganizationPermissions.Owner
       || e === OrganizationPermissions.Admin
     );
+  }
+);
+
+OrganizationSchema.method<IOrganization>(
+  'isUserAllowed',
+  function (userId: string, permission: OrganizationPermissions[]) {
+    const user: IUserRelation | undefined = this.users.find(e => e.userId.toString() === userId.toString());
+    if (!user) { return false; };
+
+    const userPermissions = new Set(user.permissions);
+    const isUserAllowed = permission.some(e => userPermissions.has(e));
+
+    return isUserAllowed;
   }
 );
 

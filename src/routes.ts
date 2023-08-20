@@ -10,6 +10,7 @@ import useOrganization from './controllers/organization';
 import useFileController from './controllers/files';
 import useUserController from './controllers/user';
 import useRobotController from './controllers/robot';
+import useRobotPartController from './controllers/robotParts';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -26,6 +27,7 @@ useOrganization(router);
 useFileController(router);
 useUserController(router);
 useRobotController(router);
+useRobotPartController(router);
 
 // Dev routes
 if (process.env.NODE_ENV === 'development') {
