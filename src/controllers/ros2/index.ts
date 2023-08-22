@@ -9,13 +9,15 @@ import deletePublisher from './deletePublisher';
 import deleteSubscriber from './deleteSubscriber';
 import deleteAction from './deleteAction';
 import deleteService from './deleteService';
+import createMessageType from './createMessageType';
 
-const useRobotPartController = (router: Router) => {
+const useRos2Controller = (router: Router) => {
   router.post('/ros2/:robotId/:partId/createTopic', createTopic);
   router.post('/ros2/:robotId/:partId/createPublisher', createPublisher);
   router.post('/ros2/:robotId/partId/createSubscriber', createSubscriber);
   router.post('/ros2/:robotId/:partId/createAction', createAction);
   router.post('/ros2/:robotId/:partId/createService', createService);
+  router.post('/ros2/:robotId/:partId/createMessageType', createMessageType);
 
   router.delete('/ros2/:robotId/:partId/deleteTopic/:topicId', deleteTopic);
   router.delete('/ros2/:robotId/:partId/deletePublisher/:publisherId', deletePublisher);
@@ -24,4 +26,4 @@ const useRobotPartController = (router: Router) => {
   router.delete('/ros2/:robotId/:partId/deleteService/:serviceId', deleteService);
 };
 
-export default useRobotPartController;
+export default useRos2Controller;

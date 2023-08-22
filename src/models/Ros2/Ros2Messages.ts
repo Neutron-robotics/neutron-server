@@ -1,20 +1,20 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface Ros2Field {
+export interface Ros2Field {
   fieldtype: string;
   fieldname: string;
 }
 
-interface ROS2ServiceMessageStructure {
+export interface ROS2ServiceMessageStructure {
   request: Ros2Field[];
   response: Ros2Field[];
 }
 
-interface ROS2MessageStructure {
+export interface ROS2MessageStructure {
   fields: Ros2Field[]
 }
 
-interface ROS2ActionMessageStructure {
+export interface ROS2ActionMessageStructure {
   goal: Ros2Field[]
   feedback: Ros2Field[]
   result: Ros2Field[]

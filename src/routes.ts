@@ -11,6 +11,7 @@ import useFileController from './controllers/files';
 import useUserController from './controllers/user';
 import useRobotController from './controllers/robot';
 import useRobotPartController from './controllers/robotParts';
+import useRos2Controller from './controllers/ros2';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -28,6 +29,7 @@ useFileController(router);
 useUserController(router);
 useRobotController(router);
 useRobotPartController(router);
+useRos2Controller(router);
 
 // Dev routes
 if (process.env.NODE_ENV === 'development') {
