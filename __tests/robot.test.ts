@@ -170,6 +170,8 @@ describe('robot tests', () => {
     expect(robotUpdated?.imgUrl).toBe('https://static.hugosoft.com/robots/testupdated.png');
     expect(robotUpdated?.context).toBe(ConnectionContextType.Tcp);
   });
+
+  it.todo('Create a Ros2System when robot is created');
 });
 
 describe('part tests', () => {
@@ -276,4 +278,14 @@ describe('part tests', () => {
     expect(res.statusCode).toBe(200);
     expect(robotPartDeleted?.parts.length).toBe(1);
   });
+
+  it.todo('Create topic');
+
+  it.todo('Add Publisher');
+
+  it.todo('Add Subscriber');
+
+  it.todo('Add Action');
+
+  it.todo('Add Publisher and Subscriber on the same topic');
 });

@@ -1,4 +1,6 @@
-import { Schema, model, Document } from 'mongoose';
+import {
+  Schema, model, Document, Types
+} from 'mongoose';
 
 export enum RobotPartCategory {
     Actuator = 'actuator',
@@ -11,6 +13,9 @@ export interface IRobotPart extends Document {
     category: RobotPartCategory
     name: string
     imgUrl: string
+    publishers: Types.ObjectId[];
+    subscribers: Types.ObjectId[];
+    actions: Types.ObjectId[];
 }
 
 export const RobotPartSchema = new Schema<IRobotPart>({
@@ -29,7 +34,25 @@ export const RobotPartSchema = new Schema<IRobotPart>({
   },
   imgUrl: {
     type: String
-  }
+  },
+  publishers: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'ROS2PublisherStructure'
+    }
+  ],
+  subscribers: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'ROS2SubscriberStructure'
+    }
+  ],
+  actions: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'ROS2ActionStructure'
+    }
+  ]
 });
 
 const RobotPart = model<IRobotPart>('RobotPart', RobotPartSchema);
