@@ -14,6 +14,8 @@ export interface CreateRobotPart {
   category: RobotPartCategory
   name: string
   imgUrl: string
+  ros2Node: string,
+  ros2Package: string
 }
 
 interface CreatePartSchema {

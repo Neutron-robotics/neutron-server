@@ -20,7 +20,9 @@ const updatePartsSchema = Joi.object<UpdateRobotPart>().keys({
   type: Joi.string().optional(),
   category: Joi.string().valid(...Object.values(RobotPartCategory)).optional(),
   name: Joi.string().optional(),
-  imgUrl: Joi.optional()
+  imgUrl: Joi.optional(),
+  ros2Node: Joi.string().optional(),
+  ros2Package: Joi.string().optional()
 });
 
 const updateSchemaParams = Joi.object<UpdatePartSchema>().keys({

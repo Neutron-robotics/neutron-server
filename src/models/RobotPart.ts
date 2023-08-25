@@ -13,6 +13,8 @@ export interface IRobotPart extends Document {
     category: RobotPartCategory
     name: string
     imgUrl: string
+    ros2Package: string
+    ros2Node: string
     publishers: Types.ObjectId[];
     subscribers: Types.ObjectId[];
     services: Types.ObjectId[];
@@ -34,6 +36,12 @@ export const RobotPartSchema = new Schema<IRobotPart>({
     required: true
   },
   imgUrl: {
+    type: String
+  },
+  ros2Node: {
+    type: String
+  },
+  ros2Package: {
     type: String
   },
   publishers: [
