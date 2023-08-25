@@ -9,8 +9,8 @@ import { withAuth } from '../../middleware/withAuth';
 import Organization, { OrganizationPermissions } from '../../models/Organization';
 import { BadRequest, Forbidden } from '../../errors/bad-request';
 import RobotPart from '../../models/RobotPart';
-import ROS2ActionModel from '../../models/Ros2/Ros2Action';
 import { UserRole } from '../../models/User';
+import Robot from '../../models/Robot';
 
 interface CreateMessageTypeParams {
   robotId: string
@@ -29,15 +29,18 @@ const Ros2FieldSchema = Joi.object<Ros2Field>().keys({
 });
 
 const Ros2MessageSchema = Joi.object<ROS2MessageStructure>().keys({
-  fields: Joi.array().items(Ros2FieldSchema).optional()
+  name: Joi.string().required(),
+  fields: Joi.array().items(Ros2FieldSchema)
 });
 
 const Ros2ServiceSchema = Joi.object<ROS2ServiceMessageStructure>().keys({
-  request: Joi.array().items(Ros2FieldSchema).optional(),
-  response: Joi.array().items(Ros2FieldSchema).optional()
+  name: Joi.string().required(),
+  request: Joi.array().items(Ros2FieldSchema).required(),
+  response: Joi.array().items(Ros2FieldSchema).required()
 });
 
 const Ros2ActionSchema = Joi.object<ROS2ActionMessageStructure>().keys({
+  name: Joi.string().required(),
   goal: Joi.array().items(Ros2FieldSchema).optional(),
   feedback: Joi.array().items(Ros2FieldSchema).optional(),
   result: Joi.array().items(Ros2FieldSchema).optional()
@@ -63,28 +66,37 @@ const createMessageType: RequestHandler<any> = async (req: Request<CreateMessage
     if (!organization.isUserAllowed(userId, [OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator, OrganizationPermissions.Owner])) {
       throw new Forbidden('User do not have the authorization for ros2 settings');
     };
-    const part = await RobotPart.findOne({ _id: params.partId });
+
+    const robot = await Robot.findById(params.robotId);
+    if (!robot) { throw new BadRequest('The robot does not exist'); };
+    const part = robot.parts.find(e => e._id.toString() === params.partId);
     if (!part) { throw new BadRequest('The part does not exist'); };
 
+    let createdModel;
+
     if (body.action) {
-      await ROS2ActionMessageModel.create({
+      createdModel = await ROS2ActionMessageModel.create({
         feedback: body.action.feedback,
         goal: body.action.goal,
-        result: body.action.result
+        result: body.action.result,
+        name: body.action.name
       });
     } else if (body.message) {
-      await ROS2MessageModel.create({
-        fields: body.message.fields
+      createdModel = await ROS2MessageModel.create({
+        fields: body.message.fields,
+        name: body.message.name
       });
     } else if (body.service) {
-      await ROS2ServiceMessageModel.create({
+      createdModel = await ROS2ServiceMessageModel.create({
         request: body.service.request,
-        response: body.service.response
+        response: body.service.response,
+        name: body.service.name
       });
     } else { throw new BadRequest('No messages has been defined'); };
 
     res.send({
-      message: 'OK'
+      message: 'OK',
+      id: createdModel.id
     });
   } catch (error: any) {
     next(error);

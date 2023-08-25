@@ -8,8 +8,7 @@ interface ROS2ActionStructure {
 const ROS2ActionSchema = new Schema<ROS2ActionStructure>({
   name: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   actionType: {
     type: Schema.Types.ObjectId,

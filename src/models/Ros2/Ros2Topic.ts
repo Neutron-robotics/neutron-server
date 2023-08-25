@@ -8,8 +8,7 @@ interface ROS2TopicStructure {
 const ROS2TopicSchema = new Schema<ROS2TopicStructure>({
   name: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   messageType: {
     type: Schema.Types.ObjectId,

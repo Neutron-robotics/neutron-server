@@ -10,6 +10,7 @@ import { makeOrganization } from './__utils__/organization_setup';
 import Robot, { ConnectionContextType } from '../src/models/Robot';
 import Organization from '../src/models/Organization';
 import { RobotPartCategory } from '../src/models/RobotPart';
+import Ros2SystemModel from '../src/models/Ros2/Ros2System';
 
 describe('robot tests', () => {
   let user: any = {};
@@ -171,7 +172,12 @@ describe('robot tests', () => {
     expect(robotUpdated?.context).toBe(ConnectionContextType.Tcp);
   });
 
-  it.todo('Create a Ros2System when robot is created');
+  it('Create a Ros2System when robot is created', async () => {
+    const { robot } = await makeRobot(token, []);
+
+    const ros2system = await Ros2SystemModel.findOne({ robotId: robot.id });
+    expect(ros2system).not.toBeNull();
+  });
 });
 
 describe('part tests', () => {
@@ -279,7 +285,7 @@ describe('part tests', () => {
     expect(robotPartDeleted?.parts.length).toBe(1);
   });
 
-  it.todo('Create topic');
+  it.todo('Add topic');
 
   it.todo('Add Publisher');
 

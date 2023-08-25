@@ -3,6 +3,7 @@ import {
 } from 'mongoose';
 import Organization from './Organization';
 import { IRobotPart, RobotPartSchema } from './RobotPart';
+import Ros2SystemModel from './Ros2/Ros2System';
 
 export enum ConnectionContextType {
     Ros2 = 'ros2',
@@ -59,6 +60,17 @@ RobotSchema.post('deleteOne', async function postDelete(doc, next) {
   } catch (err: any) {
     return next(err);
   }
+});
+
+RobotSchema.pre('save', async function onCreate(done) {
+  if (!this.isNew) {
+    return done();
+  }
+
+  await Ros2SystemModel.create({
+    name: this.name,
+    robotId: this._id
+  });
 });
 
 const Robot = model<IRobot>('Robot', RobotSchema);

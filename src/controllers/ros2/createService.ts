@@ -7,6 +7,9 @@ import { BadRequest, Forbidden } from '../../errors/bad-request';
 import Organization, { OrganizationPermissions } from '../../models/Organization';
 import RobotPart from '../../models/RobotPart';
 import ROS2ServiceModel from '../../models/Ros2/Ros2Service';
+import Robot from '../../models/Robot';
+import { ROS2ServiceMessageModel } from '../../models/Ros2/Ros2Messages';
+import Ros2SystemModel from '../../models/Ros2/Ros2System';
 
 interface CreateServiceBody {
     name: string,
@@ -38,19 +41,29 @@ const createService: RequestHandler<any> = async (req: Request<CreateServicePara
       throw new Forbidden('User do not have the authorization for ros2 settings');
     };
 
-    const part = await RobotPart.findOne({ _id: params.partId });
+    const robot = await Robot.findById(params.robotId);
+    if (!robot) { throw new BadRequest('The robot does not exist'); };
+    const part = robot.parts.find(e => e._id.toString() === params.partId);
     if (!part) { throw new BadRequest('The part does not exist'); };
 
-    const serviceType = ROS2ServiceModel.findOne({ _id: body.serviceTypeId });
+    const serviceType = await ROS2ServiceMessageModel.findOne({ _id: body.serviceTypeId });
     if (!serviceType) { throw new BadRequest('The serviceType does not exist'); };
 
-    await ROS2ServiceModel.create({
+    const service = await ROS2ServiceModel.create({
       name: body.name,
       serviceType
     });
 
+    const ros2System = await Ros2SystemModel.getByRobotId(robot.id);
+    ros2System.services.push(service.id);
+    await ros2System.save();
+
+    part.services.push(service.id);
+    await robot.save();
+
     res.send({
-      message: 'OK'
+      message: 'OK',
+      id: service.id
     });
   } catch (error: any) {
     next(error);

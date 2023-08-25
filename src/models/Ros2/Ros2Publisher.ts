@@ -9,8 +9,7 @@ interface ROS2PublisherStructure {
 const ROS2PublisherSchema = new Schema<ROS2PublisherStructure>({
   name: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   topic: {
     type: Schema.Types.ObjectId,

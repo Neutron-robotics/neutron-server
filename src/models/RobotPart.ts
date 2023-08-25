@@ -15,6 +15,7 @@ export interface IRobotPart extends Document {
     imgUrl: string
     publishers: Types.ObjectId[];
     subscribers: Types.ObjectId[];
+    services: Types.ObjectId[];
     actions: Types.ObjectId[];
 }
 
@@ -45,6 +46,12 @@ export const RobotPartSchema = new Schema<IRobotPart>({
     {
       type: Schema.Types.ObjectId,
       ref: 'ROS2SubscriberStructure'
+    }
+  ],
+  services: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'ROS2ServiceStructure'
     }
   ],
   actions: [

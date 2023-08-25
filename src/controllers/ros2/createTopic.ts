@@ -8,6 +8,8 @@ import Organization, { OrganizationPermissions } from '../../models/Organization
 import RobotPart from '../../models/RobotPart';
 import ROS2TopicModel from '../../models/Ros2/Ros2Topic';
 import { ROS2MessageModel } from '../../models/Ros2/Ros2Messages';
+import Robot from '../../models/Robot';
+import Ros2SystemModel from '../../models/Ros2/Ros2System';
 
 interface CreateTopicBody {
     name: string,
@@ -39,21 +41,28 @@ const createTopic: RequestHandler<any> = async (req: Request<CreateTopicParams, 
       throw new Forbidden('User do not have the authorization for ros2 settings');
     };
 
-    const part = await RobotPart.findOne({ _id: params.partId });
+    const robot = await Robot.findById(params.robotId);
+    if (!robot) { throw new BadRequest('The robot does not exist'); };
+    const part = robot.parts.find(e => e._id.toString() === params.partId);
     if (!part) { throw new BadRequest('The part does not exist'); };
 
-    const messageType = await ROS2MessageModel.find({
+    const messageType = await ROS2MessageModel.findOne({
       _id: body.messageTypeId
     });
     if (!messageType) { throw new BadRequest('The messageType does not exist'); };
 
-    await ROS2TopicModel.create({
+    const topicModel = await ROS2TopicModel.create({
       name: body.name,
       messageType
     });
 
+    const ros2System = await Ros2SystemModel.getByRobotId(robot.id);
+    ros2System.topics.push(topicModel.id);
+    await ros2System.save();
+
     res.send({
-      message: 'OK'
+      message: 'OK',
+      id: topicModel.id
     });
   } catch (error: any) {
     next(error);

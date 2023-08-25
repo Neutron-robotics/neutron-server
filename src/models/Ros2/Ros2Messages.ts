@@ -6,15 +6,18 @@ export interface Ros2Field {
 }
 
 export interface ROS2ServiceMessageStructure {
+  name: string
   request: Ros2Field[];
   response: Ros2Field[];
 }
 
 export interface ROS2MessageStructure {
+  name: string
   fields: Ros2Field[]
 }
 
 export interface ROS2ActionMessageStructure {
+  name: string
   goal: Ros2Field[]
   feedback: Ros2Field[]
   result: Ros2Field[]
@@ -36,6 +39,10 @@ const ROS2ServiceMessageSchema = new Schema<ROS2ServiceMessageStructure>({
       fieldname: String
     }],
     required: true
+  },
+  name: {
+    type: String,
+    required: true
   }
 });
 
@@ -52,6 +59,10 @@ const ROS2MessageSchema = new Schema<ROS2MessageStructure>({
       fieldtype: String,
       fieldname: String
     }],
+    required: true
+  },
+  name: {
+    type: String,
     required: true
   }
 });
@@ -83,6 +94,10 @@ const ROS2ActionMessageSchema = new Schema<ROS2ActionMessageStructure>({
       fieldtype: String,
       fieldname: String
     }],
+    required: true
+  },
+  name: {
+    type: String,
     required: true
   }
 });
