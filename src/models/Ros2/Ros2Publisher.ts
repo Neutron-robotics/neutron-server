@@ -14,7 +14,8 @@ const ROS2PublisherSchema = new Schema<ROS2PublisherStructure>({
   topic: {
     type: Schema.Types.ObjectId,
     ref: 'ROS2TopicStructure',
-    required: true
+    required: true,
+    autopopulate: true
   },
   frequency: {
     type: Number

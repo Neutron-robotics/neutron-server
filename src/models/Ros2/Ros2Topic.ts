@@ -13,9 +13,11 @@ const ROS2TopicSchema = new Schema<ROS2TopicStructure>({
   messageType: {
     type: Schema.Types.ObjectId,
     ref: 'ROS2MessageStructure',
-    required: true
+    required: true,
+    autopopulate: true
   }
 });
+ROS2TopicSchema.plugin(require('mongoose-autopopulate'));
 
 const ROS2TopicModel = mongoose.model<ROS2TopicStructure & Document>(
   'ROS2TopicStructure',

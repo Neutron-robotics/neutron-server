@@ -13,7 +13,8 @@ const ROS2ActionSchema = new Schema<ROS2ActionStructure>({
   actionType: {
     type: Schema.Types.ObjectId,
     ref: 'ROS2MessageStructure',
-    required: true
+    required: true,
+    autopopulate: true
   }
 });
 

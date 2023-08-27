@@ -33,6 +33,7 @@ const getRos2System: RequestHandler<any> = async (req: Request<GetRos2SystemPara
     const model = await Ros2SystemModel.getByRobotId(robot.id);
     const populatedModel = await Ros2SystemModel.populate(model, [
       { path: 'topics' },
+      { path: 'topics/messageType' },
       { path: 'publishers' },
       { path: 'subscribers' },
       { path: 'actions' },

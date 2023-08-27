@@ -13,7 +13,8 @@ const ROS2SubscriberSchema = new Schema<ROS2SubscriberStructure>({
   topic: {
     type: Schema.Types.ObjectId,
     ref: 'ROS2TopicStructure',
-    required: true
+    required: true,
+    autopopulate: true
   }
 });
 

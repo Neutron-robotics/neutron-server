@@ -26,7 +26,8 @@ const Ros2SystemSchema = new Schema<Ros2System>({
     {
       type: Schema.Types.ObjectId,
       ref: 'ROS2TopicStructure',
-      default: []
+      default: [],
+      autopopulate: true
     }
   ],
   publishers: [

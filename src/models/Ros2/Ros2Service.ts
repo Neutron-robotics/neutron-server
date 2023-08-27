@@ -13,7 +13,8 @@ const ROS2ServiceSchema = new Schema<ROS2ServiceStructure>({
   serviceType: {
     type: Schema.Types.ObjectId,
     ref: 'ROS2ServiceStructure',
-    required: true
+    required: true,
+    autopopulate: true
   }
 });
 
