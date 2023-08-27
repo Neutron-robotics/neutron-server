@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface ROS2ActionStructure {
+export interface ROS2ActionStructure {
   name: string;
   actionType: mongoose.Types.ObjectId;
 }

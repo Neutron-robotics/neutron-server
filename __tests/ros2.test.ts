@@ -8,7 +8,7 @@ import { makeRobot } from './__utils__/robot_setup';
 import app from '../src/app';
 import { ROS2ActionMessageModel, ROS2MessageModel, ROS2ServiceMessageModel } from '../src/models/Ros2/Ros2Messages';
 import {
-  IRos2Mock, ROS2ACTION_PROGRESS, ROS2MESSAGES_XY, ROS2SRV_STATUS, ros2Mocks
+  IRos2Mock, ROS2ACTION_PROGRESS, ROS2MESSAGES_WZ, ROS2MESSAGES_XY, ROS2SRV_STATUS, ros2Mocks
 } from './__utils__/ros2_setup';
 import ROS2TopicModel from '../src/models/Ros2/Ros2Topic';
 import ROS2PublisherModel from '../src/models/Ros2/Ros2Publisher';
@@ -314,8 +314,56 @@ describe('ros2 protocol related tests', () => {
 
     expect(ros2System.statusCode).toBe(200);
     expect(ros2System.body.model.subscribers.length).toBe(1);
+    expect(ros2System.body.model.subscribers[0].name).toBe('testsubscriper');
     expect(ros2System.body.model.services.length).toBe(1);
     expect(ros2System.body.model.actions.length).toBe(1);
     expect(ros2System.body.model.publishers.length).toBe(1);
+    expect(ros2System.body.model.topics.length).toBe(1);
+  });
+
+  it('Update ros2 schema for a topic', async () => {
+    const messageTypeId = (await ros2Mock.createMessageType(ROS2MESSAGES_XY)).body.id;
+    const topicId = (await ros2Mock.createTopic('testopic', messageTypeId)).body.id;
+
+    const update = await ros2Mock.updateRos2('topic', {
+      topic: {
+        _id: topicId,
+        name: 'nouveautopic'
+      }
+    });
+
+    const topic = await ROS2TopicModel.findById(topicId);
+    const topicPopulated: any = await ROS2TopicModel.populate(topic, [{ path: 'messageType' }]);
+
+    expect(update.statusCode).toBe(200);
+    expect(topic).toBeDefined();
+    expect(topic?.name).toBe('nouveautopic');
+    expect(topicPopulated.messageType.fields.length).toBe(2);
+  });
+
+  it('Update ros2 schema for a topic then pub sub', async () => {
+    const messageTypeId = (await ros2Mock.createMessageType(ROS2MESSAGES_XY)).body.id;
+    const messageTypeId2 = (await ros2Mock.createMessageType(ROS2MESSAGES_WZ)).body.id;
+    const topicId = (await ros2Mock.createTopic('testopic', messageTypeId)).body.id;
+    const subscriberId = (await ros2Mock.createSubscriber('testsubscriper', topicId)).body.id;
+
+    const update = await ros2Mock.updateRos2('topic', {
+      topic: {
+        _id: topicId,
+        messageType: {
+          _id: messageTypeId2
+        }
+      }
+    });
+
+    expect(update.statusCode).toBe(200);
+    const topic = await ROS2TopicModel.findById(topicId);
+    const topicPopulated: any = await ROS2TopicModel.populate(topic, [{ path: 'messageType' }]);
+    expect(topicPopulated.messageType.fields.length).toBe(2);
+    expect(topicPopulated.messageType.fields[0].fieldname).toBe('w');
+
+    const subscriber = await ROS2SubscriberModel.findById(subscriberId);
+    const subscriberPopulated: any = await ROS2SubscriberModel.populate(subscriber, [{ path: 'topic' }]);
+    expect(subscriberPopulated.topic.messageType.toString()).toBe(messageTypeId2);
   });
 });

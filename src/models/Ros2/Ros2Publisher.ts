@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface ROS2PublisherStructure {
+export interface ROS2PublisherStructure {
   name: string;
   topic: mongoose.Types.ObjectId;
   frequency: number

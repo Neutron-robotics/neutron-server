@@ -31,10 +31,16 @@ const getRos2System: RequestHandler<any> = async (req: Request<GetRos2SystemPara
     if (!robot) { throw new BadRequest('The robot does not exist'); };
 
     const model = await Ros2SystemModel.getByRobotId(robot.id);
-
+    const populatedModel = await Ros2SystemModel.populate(model, [
+      { path: 'topics' },
+      { path: 'publishers' },
+      { path: 'subscribers' },
+      { path: 'actions' },
+      { path: 'services' }
+    ]);
     res.send({
       message: 'OK',
-      model
+      model: populatedModel
     });
   } catch (error: any) {
     next(error);

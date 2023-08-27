@@ -44,7 +44,8 @@
     "multer": "^1.4.5-lts.1",
     "swagger-ui-express": "4.6.2",
     "winston": "3.8.2",
-    "winston-transport": "^4.5.0"
+    "winston-transport": "^4.5.0",
+    "neutron-core": "../Neutron-core"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",

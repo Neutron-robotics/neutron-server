@@ -42,6 +42,10 @@ interface IRos2Mock {
       getRos2System: (
 
       ) => Promise<request.Response>
+      updateRos2: (
+        type: string,
+        payload: any
+      ) => Promise<request.Response>
 }
 
 const ROS2MESSAGES_XY = {
@@ -55,6 +59,22 @@ const ROS2MESSAGES_XY = {
       {
         fieldtype: 'int32',
         fieldname: 'y'
+      }
+    ]
+  }
+};
+
+const ROS2MESSAGES_WZ = {
+  message: {
+    name: 'test/coordinate',
+    fields: [
+      {
+        fieldtype: 'int32',
+        fieldname: 'w'
+      },
+      {
+        fieldtype: 'int32',
+        fieldname: 'z'
       }
     ]
   }
@@ -261,6 +281,14 @@ const ros2Mocks = async (token: string, partModel: IRobotPartModel) => {
     return res;
   };
 
+  const updateRos2 = async (type: string, payload: any) => {
+    const res = await request(app)
+      .post(`/ros2/${robot.id}/${type}/update`)
+      .auth(token, { type: 'bearer' })
+      .send(payload);
+    return res;
+  };
+
   return {
     cleanUp,
     createMessageType,
@@ -272,10 +300,11 @@ const ros2Mocks = async (token: string, partModel: IRobotPartModel) => {
     createService,
     createAction,
     getPart,
-    getRos2System
+    getRos2System,
+    updateRos2
   };
 };
 
 export {
-  ros2Mocks, ROS2MESSAGES_XY, IRos2Mock, ROS2SRV_STATUS, ROS2ACTION_PROGRESS
+  ros2Mocks, ROS2MESSAGES_XY, IRos2Mock, ROS2SRV_STATUS, ROS2ACTION_PROGRESS, ROS2MESSAGES_WZ
 };

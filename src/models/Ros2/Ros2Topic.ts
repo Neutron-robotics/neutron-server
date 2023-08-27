@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface ROS2TopicStructure {
+export interface ROS2TopicStructure {
   name: string;
   messageType: mongoose.Types.ObjectId;
 }

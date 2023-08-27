@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface ROS2ServiceStructure {
+export interface ROS2ServiceStructure {
   name: string;
   serviceType: mongoose.Types.ObjectId;
 }
