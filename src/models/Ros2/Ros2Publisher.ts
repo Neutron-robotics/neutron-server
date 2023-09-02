@@ -21,6 +21,7 @@ const ROS2PublisherSchema = new Schema<ROS2PublisherStructure>({
     type: Number
   }
 });
+ROS2PublisherSchema.plugin(require('mongoose-autopopulate'));
 
 const ROS2PublisherModel = mongoose.model<ROS2PublisherStructure & Document>(
   'ROS2PublisherStructure',

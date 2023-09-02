@@ -12,11 +12,13 @@ const ROS2ServiceSchema = new Schema<ROS2ServiceStructure>({
   },
   serviceType: {
     type: Schema.Types.ObjectId,
-    ref: 'ROS2ServiceStructure',
+    ref: 'ROS2ServiceMessageStructure',
     required: true,
     autopopulate: true
   }
 });
+
+ROS2ServiceSchema.plugin(require('mongoose-autopopulate'));
 
 const ROS2ServiceModel = mongoose.model<ROS2ServiceStructure & Document>(
   'ROS2ServiceStructure',

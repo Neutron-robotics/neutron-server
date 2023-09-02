@@ -18,6 +18,8 @@ const ROS2SubscriberSchema = new Schema<ROS2SubscriberStructure>({
   }
 });
 
+ROS2SubscriberSchema.plugin(require('mongoose-autopopulate'));
+
 const ROS2SubscriberModel = mongoose.model<ROS2SubscriberStructure & Document>(
   'ROS2SubscriberStructure',
   ROS2SubscriberSchema,

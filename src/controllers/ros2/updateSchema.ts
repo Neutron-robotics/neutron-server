@@ -76,14 +76,14 @@ const updateSchema: RequestHandler<any> = async (
         await ROS2PublisherModel.findByIdAndUpdate(body.publisher!._id, {
           name: body.publisher!.name,
           frequency: body.publisher!.frequency,
-          topic: body.publisher!._id
+          topic: body.publisher!.topic._id
         });
         break;
 
       case 'subscriber':
         await ROS2SubscriberModel.findByIdAndUpdate(body.subscriber!._id, {
           name: body.subscriber!.name,
-          topic: body.subscriber!._id
+          topic: body.subscriber!.topic._id
         });
         break;
 

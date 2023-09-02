@@ -12,11 +12,13 @@ const ROS2ActionSchema = new Schema<ROS2ActionStructure>({
   },
   actionType: {
     type: Schema.Types.ObjectId,
-    ref: 'ROS2MessageStructure',
+    ref: 'ROS2ActionMessageStructure',
     required: true,
     autopopulate: true
   }
 });
+
+ROS2ActionSchema.plugin(require('mongoose-autopopulate'));
 
 const ROS2ActionModel = mongoose.model<ROS2ActionStructure & Document>(
   'ROS2ActionStructure',
