@@ -3,11 +3,9 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../../src/app';
-import { generateRandomString } from './string';
-import Robot from '../../src/models/Robot';
-import { makeOrganization } from './organization_setup';
-import Organization from '../../src/models/Organization';
-import RobotPart, { IRobotPart, RobotPartCategory } from '../../src/models/RobotPart';
+import Robot, { IRobot } from '../../src/models/Robot';
+import Organization, { IOrganization } from '../../src/models/Organization';
+import { IRobotPart, RobotPartCategory } from '../../src/models/RobotPart';
 import { IRobotPartModel, makeRobot } from './robot_setup';
 import { ROS2ActionMessageModel, ROS2ServiceMessageModel } from '../../src/models/Ros2/Ros2Messages';
 import ROS2TopicModel from '../../src/models/Ros2/Ros2Topic';
@@ -16,6 +14,8 @@ import ROS2SubscriberModel from '../../src/models/Ros2/Ros2Subscriber';
 import ROS2ActionModel from '../../src/models/Ros2/Ros2Action';
 
 interface IRos2Mock {
+    robot: IRobot
+    organization: IOrganization
     cleanUp: () => Promise<void>
     getPart: () => Promise<IRobotPart>
     createMessageType: (data: any) => Promise<request.Response>
@@ -301,7 +301,9 @@ const ros2Mocks = async (token: string, partModel: IRobotPartModel) => {
     createAction,
     getPart,
     getRos2System,
-    updateRos2
+    updateRos2,
+    robot,
+    organization: organization as IOrganization
   };
 };
 
