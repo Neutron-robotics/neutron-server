@@ -8,12 +8,15 @@ import app from '../src/app';
 import { flow } from './__mixture__/neutronGraphs';
 import { makeRobot } from './__utils__/robot_setup';
 import { RobotPartCategory } from '../src/models/RobotPart';
-import { IRos2Mock, ros2Mocks } from './__utils__/ros2_setup';
+import NeutronGraph from '../src/models/NeutronGraph';
+import Organization, { IOrganization } from '../src/models/Organization';
+import Robot, { IRobot } from '../src/models/Robot';
 
 describe('Neutron graph controller', () => {
   let user: any = {};
   let token: string = '';
-  let ros2Mock: IRos2Mock;
+  let robotMock: IRobot;
+  let organizationMock: IOrganization;
   const result = dotenv.config();
   if (result.error) {
     dotenv.config({ path: '.env.default' });
@@ -24,25 +27,28 @@ describe('Neutron graph controller', () => {
     const { user: usr, password } = await makeUser(true);
     token = await withLogin(usr.email, password);
     user = usr;
-    ros2Mock = await ros2Mocks(token, {
+    const { robot, organization } = await makeRobot(token, [{
       type: 'Grapper',
       category: RobotPartCategory.Actuator,
       name: 'Robot grab grab',
       imgUrl: 'https://static.neutron.com/robot/wdjxsiushf.png'
-    });
+    }]);
+    robotMock = robot;
+    organizationMock = organization as IOrganization;
   });
 
   afterEach(async () => {
     User.deleteOne({ email: user.email });
-    await ros2Mock.cleanUp();
+    Robot.deleteOne({ _id: robotMock._id });
+    Organization.deleteOne({ _id: organizationMock._id });
     await mongoose.connection.close();
   });
 
   it('create a new graph', async () => {
     const newGraphModel = {
       ...flow,
-      robotId: ros2Mock.robot.id,
-      partId: ros2Mock.robot.parts[0].id,
+      robotId: robotMock.id,
+      partId: robotMock.parts[0].id,
       title: `test graph ${randomUUID()}`
     };
 
@@ -52,18 +58,21 @@ describe('Neutron graph controller', () => {
       .send(newGraphModel);
 
     const graph = await NeutronGraph.findOne({ _id: res.body.id });
+    if (!graph) { throw new Error('Graph not found'); };
     expect(res.body.id).toBeDefined();
     expect(res.statusCode).toBe(200);
     expect(graph.title).toBe(newGraphModel.title);
-    expect(graph.robotId).toBe(ros2Mock.robot.id);
-    expect(graph.partId).toBe(ros2Mock.robot.parts[0].id);
+    expect(graph.robot.toString()).toBe(robotMock.id);
+    expect(graph.part.toString()).toBe(robotMock.parts[0].id);
+    expect(graph.nodes.length).toBe(6);
+    expect(graph.edges.length).toBe(6);
   });
 
   it('get user\'s graphs', async () => {
     const newGraphModel = {
       ...flow,
-      robotId: ros2Mock.robot.id,
-      partId: ros2Mock.robot.parts[0].id,
+      robotId: robotMock.id,
+      partId: robotMock.parts[0].id,
       title: `test graph ${randomUUID()}`
     };
 
@@ -71,25 +80,28 @@ describe('Neutron graph controller', () => {
       .post('/graph/create')
       .auth(token, { type: 'bearer' })
       .send(newGraphModel);
+    expect(res.statusCode).toBe(200);
 
-    const graph = await request(app)
+    const resMyGraphs = await request(app)
       .get('/graph/me')
       .auth(token, { type: 'bearer' });
 
-    expect(graph.body.length).toBe(1);
-    const result = graph.body[0];
-    expect(result.id).toBeDefined();
-    expect(graph.statusCode).toBe(200);
+    const result = resMyGraphs.body.graphs[0];
+    expect(resMyGraphs.statusCode).toBe(200);
+    expect(resMyGraphs.body.graphs.length).toBe(1);
+    expect(result._id).toBeDefined();
     expect(result.title).toBe(newGraphModel.title);
-    expect(result.robotId).toBe(ros2Mock.robot.id);
-    expect(result.partId).toBe(ros2Mock.robot.parts[0].id);
+    expect(result.robot).toBe(robotMock.id);
+    expect(result.part).toBe(robotMock.parts[0].id);
+    expect(result.nodes.length).toBe(6);
+    expect(result.edges.length).toBe(6);
   });
 
-  it.todo('get organization graphs', async () => {
+  it('get organization graphs', async () => {
     const newGraphModel = {
       ...flow,
-      robotId: ros2Mock.robot.id,
-      partId: ros2Mock.robot.parts[0].id,
+      robotId: robotMock.id,
+      partId: robotMock.parts[0].id,
       title: `test graph ${randomUUID()}`
     };
 
@@ -97,22 +109,28 @@ describe('Neutron graph controller', () => {
       .post('/graph/create')
       .auth(token, { type: 'bearer' })
       .send(newGraphModel);
+    expect(res.statusCode).toBe(200);
 
-    const graph = await request(app)
-      .get(`/graph/organization/${ros2Mock.organization.id}`)
+    const resOrganizationGraphs = await request(app)
+      .get(`/graph/organization/${organizationMock.id}`)
       .auth(token, { type: 'bearer' });
-    expect(graph.body.id).toBeDefined();
-    expect(graph.statusCode).toBe(200);
-    expect(graph.body.title).toBe(newGraphModel.title);
-    expect(graph.body.robotId).toBe(ros2Mock.robot.id);
-    expect(graph.body.partId).toBe(ros2Mock.robot.parts[0].id);
+
+    const result = resOrganizationGraphs.body.graphs[0];
+    expect(resOrganizationGraphs.statusCode).toBe(200);
+    expect(resOrganizationGraphs.body.graphs.length).toBe(1);
+    expect(result._id).toBeDefined();
+    expect(result.title).toBe(newGraphModel.title);
+    expect(result.robot).toBe(robotMock.id);
+    expect(result.part).toBe(robotMock.parts[0].id);
+    expect(result.nodes.length).toBe(6);
+    expect(result.edges.length).toBe(6);
   });
 
   it('update a graph', async () => {
     const newGraphModel = {
       ...flow,
-      robotId: ros2Mock.robot.id,
-      partId: ros2Mock.robot.parts[0].id,
+      robotId: robotMock.id,
+      partId: robotMock.parts[0].id,
       title: `test graph ${randomUUID()}`
     };
     const res = await request(app)
@@ -167,18 +185,20 @@ describe('Neutron graph controller', () => {
       .send(updatedModel);
 
     expect(resUpdate.statusCode).toBe(200);
-    const update = NeutronGraph.findOne({ _id: res.body.id });
+    const update = await NeutronGraph.findOne({ _id: res.body.id });
+    if (!update) { throw new Error('Graph not found'); };
 
     expect(update.title).toBe(updatedModel.title);
     expect(update.nodes.length).toBe(2);
+    expect(update.edges.length).toBe(6);
     expect(update.nodes[0].id).toBe('30ff93a-f757-4ca0-938d-9cfd729f604e');
   });
 
   it('delete a graph', async () => {
     const graphModel = {
       ...flow,
-      robotId: ros2Mock.robot.id,
-      partId: ros2Mock.robot.parts[0].id,
+      robotId: robotMock.id,
+      partId: robotMock.parts[0].id,
       title: `test graph ${randomUUID()}`
     };
 
@@ -192,7 +212,7 @@ describe('Neutron graph controller', () => {
       .auth(token, { type: 'bearer' });
 
     expect(deleteRes.statusCode).toBe(200);
-    const deletedGraph = NeutronGraph.findOne({ _id: res.body.id });
-    expect(deletedGraph).not.toBeDefined();
+    const deletedGraph = await NeutronGraph.findOne({ _id: res.body.id });
+    expect(deletedGraph).toBeNull();
   });
 });

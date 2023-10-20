@@ -24,11 +24,11 @@ const deleteGraph: RequestHandler<any> = async (req: Request<DeleteGraphParams, 
     const graph = await NeutronGraph.findById(params.graphId);
     if (!graph) throw new BadRequest('The graph has not been found');
     const organization = await Organization.getByRobotId(graph.robot._id.toString());
-    if (!organization.isUserAllowed(userId, [OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator])) {
+    if (!organization.isUserAllowed(userId, [OrganizationPermissions.Owner, OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator])) {
       throw new Forbidden('User do not have the authorization for nodes settings');
     }
 
-    await NeutronGraph.findByIdAndDelete(graph._id);
+    await NeutronGraph.deleteOne({ _id: graph._id });
     res.send({
       message: 'OK'
     });
@@ -40,7 +40,7 @@ const deleteGraph: RequestHandler<any> = async (req: Request<DeleteGraphParams, 
 export default withAuth(
   requestMiddleware(
     deleteGraph,
-    { validation: { body: deleteSchema } }
+    { validation: { params: deleteSchema } }
   ),
   { roles: [UserRole.Verified] }
 );

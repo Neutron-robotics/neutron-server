@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import mongoose from 'mongoose';
-import NeutronGraph, { INeutronNode } from '../../models/NeutronGraph';
+import NeutronGraph, { INeutronEdge, INeutronNode } from '../../models/NeutronGraph';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import { UserRole } from '../../models/User';
@@ -10,7 +10,8 @@ import { BadRequest, Forbidden } from '../../errors/bad-request';
 
 const updateSchema = Joi.object().keys({
   title: Joi.string().optional(),
-  nodes: Joi.array().optional()
+  nodes: Joi.array().optional(),
+  edges: Joi.array().optional()
 });
 
 const updateParams = Joi.object().keys({
@@ -20,6 +21,7 @@ const updateParams = Joi.object().keys({
 interface UpdateBody {
     title?: string,
     nodes?: INeutronNode[]
+    edges?: INeutronEdge[]
 }
 
 interface UpdateParams {
@@ -37,13 +39,16 @@ const update: RequestHandler<any> = async (req: Request<UpdateParams, {}, Update
     }
 
     const organization = await Organization.getByRobotId(graph.robot.toString());
-    if (!organization.isUserAllowed(userId, [OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator])) {
+    if (!organization.isUserAllowed(userId, [OrganizationPermissions.Owner, OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator])) {
       throw new Forbidden('User do not have the authorization for nodes settings');
     }
 
     if (body.title) { graph.title = body.title; }
     if (body.nodes) { graph.nodes = body.nodes; }
+    if (body.edges) { graph.edges = body.edges; }
     graph.modifiedBy = new mongoose.Types.ObjectId(userId);
+
+    await graph.save();
 
     res.send({
       message: 'OK'

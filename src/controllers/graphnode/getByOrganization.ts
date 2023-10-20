@@ -21,12 +21,14 @@ const getByOrganization: RequestHandler<any> = async (req: Request<GetByOrganiza
   const userId = (req as any).user.sub as string;
 
   try {
-    const organization = await Organization.getByRobotId(params.organizationId);
-    if (!organization.isUserAllowed(userId, [OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator])) {
+    const organization = await Organization.findById(params.organizationId);
+    if (!organization) {
+      throw new BadRequest('The organization does not exist');
+    }
+    if (!organization.isUserAllowed(userId, [OrganizationPermissions.Owner, OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator])) {
       throw new Forbidden('User do not have the authorization for nodes settings');
     }
-
-    const graphs = await NeutronGraph.find({ robotId: { $in: organization.robots } }).lean();
+    const graphs = await NeutronGraph.find({ robot: { $in: organization.robots } }).lean();
 
     res.send({
       message: 'OK',
@@ -40,7 +42,7 @@ const getByOrganization: RequestHandler<any> = async (req: Request<GetByOrganiza
 export default withAuth(
   requestMiddleware(
     getByOrganization,
-    { validation: { body: getByOrganizationSchema } }
+    { validation: { params: getByOrganizationSchema } }
   ),
   { roles: [UserRole.Verified] }
 );

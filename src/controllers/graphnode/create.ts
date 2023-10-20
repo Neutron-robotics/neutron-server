@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import NeutronGraph, { INeutronNode } from '../../models/NeutronGraph';
+import NeutronGraph, { INeutronEdge, INeutronNode } from '../../models/NeutronGraph';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import { UserRole } from '../../models/User';
@@ -12,7 +12,8 @@ const createSchema = Joi.object().keys({
   title: Joi.string().required(),
   robotId: Joi.string().required(),
   partId: Joi.string().required(),
-  nodes: Joi.array().required()
+  nodes: Joi.array().required(),
+  edges: Joi.array().required()
 });
 
 interface CreateBody {
@@ -20,6 +21,7 @@ interface CreateBody {
     robotId: string,
     partId: string,
     nodes: INeutronNode[]
+    edges: INeutronEdge[]
 }
 
 const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, next) => {
@@ -28,7 +30,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
 
   try {
     const organization = await Organization.getByRobotId(body.robotId);
-    if (!organization.isUserAllowed(userId, [OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator])) {
+    if (!organization.isUserAllowed(userId, [OrganizationPermissions.Owner, OrganizationPermissions.Admin, OrganizationPermissions.Analyst, OrganizationPermissions.Operator])) {
       throw new Forbidden('User do not have the authorization for nodes settings');
     }
     const robot = await Robot.findById(body.robotId);
@@ -42,12 +44,13 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
       part: part._id,
       createdBy: userId,
       modifiedBy: userId,
-      nodes: body.nodes
+      nodes: body.nodes,
+      edges: body.edges
     });
 
     res.send({
       message: 'OK',
-      id: graph._id
+      id: graph.id
     });
   } catch (error: any) {
     next(error);
