@@ -11,9 +11,10 @@ import Robot from '../../models/Robot';
 const createSchema = Joi.object().keys({
   title: Joi.string().required(),
   robotId: Joi.string().required(),
-  partId: Joi.string().required(),
+  partId: Joi.string().optional(),
   nodes: Joi.array().required(),
-  edges: Joi.array().required()
+  edges: Joi.array().required(),
+  imgUrl: Joi.string().optional()
 });
 
 interface CreateBody {
@@ -21,7 +22,8 @@ interface CreateBody {
     robotId: string,
     partId: string,
     nodes: INeutronNode[]
-    edges: INeutronEdge[]
+    edges: INeutronEdge[],
+    imgUrl?: string
 }
 
 const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, next) => {
@@ -35,17 +37,21 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
     }
     const robot = await Robot.findById(body.robotId);
     if (!robot) { throw new BadRequest('The robot does not exist'); }
-    const part = robot.parts.find(e => e._id.toString() === body.partId);
-    if (!part) { throw new BadRequest('The part does not exist'); };
+
+    if (body.partId) {
+      const part = robot.parts.find(e => e._id.toString() === body.partId);
+      if (!part) { throw new BadRequest('The part does not exist'); };
+    }
 
     const graph = await NeutronGraph.create({
       title: body.title,
       robot: robot._id,
-      part: part._id,
+      part: body.partId,
       createdBy: userId,
       modifiedBy: userId,
       nodes: body.nodes,
-      edges: body.edges
+      edges: body.edges,
+      imgUrl: body.imgUrl
     });
 
     res.send({

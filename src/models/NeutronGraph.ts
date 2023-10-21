@@ -33,9 +33,12 @@ export interface INeutronEdge {
 export interface INeutronGraph extends Document {
   title: string;
   robot: Types.ObjectId;
-  part: Types.ObjectId;
+  part?: Types.ObjectId;
+  imgUrl?: string
   createdBy: Types.ObjectId;
   modifiedBy: Types.ObjectId;
+  createdAt: Date
+  updatedAt: Date
   nodes: INeutronNode[];
   edges: INeutronEdge[];
 }
@@ -47,26 +50,49 @@ const NeutronGraphSchema = new Schema<INeutronGraph>({
   },
   robot: {
     type: Schema.Types.ObjectId,
-    ref: 'Robot'
+    ref: 'Robot',
+    required: true
   },
   part: {
     type: Schema.Types.ObjectId,
     ref: 'RobotPart'
   },
+  imgUrl: {
+    type: String
+  },
   createdBy: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: true
   },
   modifiedBy: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+    required: true
   },
   edges: {
-    type: Schema.Types.Mixed
+    type: Schema.Types.Mixed,
+    required: true
   },
   nodes: {
-    type: Schema.Types.Mixed
+    type: Schema.Types.Mixed,
+    required: true
   }
+});
+
+NeutronGraphSchema.pre('save', function (next) {
+  this.updatedAt = new Date();
+  next();
 });
 
 const NeutronGraph = model('NeutronGraph', NeutronGraphSchema);

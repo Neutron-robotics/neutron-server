@@ -63,9 +63,42 @@ describe('Neutron graph controller', () => {
     expect(res.statusCode).toBe(200);
     expect(graph.title).toBe(newGraphModel.title);
     expect(graph.robot.toString()).toBe(robotMock.id);
-    expect(graph.part.toString()).toBe(robotMock.parts[0].id);
+    expect(graph.part?.toString()).toBe(robotMock.parts[0].id);
     expect(graph.nodes.length).toBe(6);
     expect(graph.edges.length).toBe(6);
+    expect(graph.createdAt).toBeDefined();
+    const timeDifference = Math.abs(graph.createdAt.getTime() - graph.updatedAt.getTime());
+    expect(timeDifference).toBeLessThan(500);
+    expect(graph.imgUrl).not.toBeDefined();
+  });
+
+  it('create a new graph without part but with a thumbnail', async () => {
+    const newGraphModel = {
+      ...flow,
+      robotId: robotMock.id,
+      partId: undefined,
+      title: `test graph ${randomUUID()}`,
+      imgUrl: 'http://localhost:3003/file/file-1697885700601-962939962.png'
+    };
+
+    const res = await request(app)
+      .post('/graph/create')
+      .auth(token, { type: 'bearer' })
+      .send(newGraphModel);
+
+    const graph = await NeutronGraph.findOne({ _id: res.body.id });
+    if (!graph) { throw new Error('Graph not found'); };
+    expect(res.body.id).toBeDefined();
+    expect(res.statusCode).toBe(200);
+    expect(graph.title).toBe(newGraphModel.title);
+    expect(graph.robot.toString()).toBe(robotMock.id);
+    expect(graph.imgUrl).toBe('http://localhost:3003/file/file-1697885700601-962939962.png');
+    expect(graph.part).not.toBeDefined();
+    expect(graph.nodes.length).toBe(6);
+    expect(graph.edges.length).toBe(6);
+    expect(graph.createdAt).toBeDefined();
+    const timeDifference = Math.abs(graph.createdAt.getTime() - graph.updatedAt.getTime());
+    expect(timeDifference).toBeLessThan(500);
   });
 
   it('get user\'s graphs', async () => {
@@ -95,6 +128,8 @@ describe('Neutron graph controller', () => {
     expect(result.part).toBe(robotMock.parts[0].id);
     expect(result.nodes.length).toBe(6);
     expect(result.edges.length).toBe(6);
+    expect(result.createdAt).toBeDefined();
+    expect(result.updatedAt).toBeDefined();
   });
 
   it('get organization graphs', async () => {
@@ -124,6 +159,39 @@ describe('Neutron graph controller', () => {
     expect(result.part).toBe(robotMock.parts[0].id);
     expect(result.nodes.length).toBe(6);
     expect(result.edges.length).toBe(6);
+    expect(result.createdAt).toBeDefined();
+    expect(result.updatedAt).toBeDefined();
+  });
+
+  it('get all graphs accessible to user', async () => {
+    const newGraphModel = {
+      ...flow,
+      robotId: robotMock.id,
+      partId: robotMock.parts[0].id,
+      title: `test graph ${randomUUID()}`
+    };
+
+    const res = await request(app)
+      .post('/graph/create')
+      .auth(token, { type: 'bearer' })
+      .send(newGraphModel);
+    expect(res.statusCode).toBe(200);
+
+    const resOrganizationGraphs = await request(app)
+      .get('/graph/all')
+      .auth(token, { type: 'bearer' });
+
+    const result = resOrganizationGraphs.body.graphs[0];
+    expect(resOrganizationGraphs.statusCode).toBe(200);
+    expect(resOrganizationGraphs.body.graphs.length).toBe(1);
+    expect(result._id).toBeDefined();
+    expect(result.title).toBe(newGraphModel.title);
+    expect(result.robot).toBe(robotMock.id);
+    expect(result.part).toBe(robotMock.parts[0].id);
+    expect(result.nodes.length).toBe(6);
+    expect(result.edges.length).toBe(6);
+    expect(result.createdAt).toBeDefined();
+    expect(result.updatedAt).toBeDefined();
   });
 
   it('update a graph', async () => {
@@ -192,6 +260,9 @@ describe('Neutron graph controller', () => {
     expect(update.nodes.length).toBe(2);
     expect(update.edges.length).toBe(6);
     expect(update.nodes[0].id).toBe('30ff93a-f757-4ca0-938d-9cfd729f604e');
+    expect(update.createdAt).toBeDefined();
+    expect(update.updatedAt).toBeDefined();
+    expect(update.updatedAt.getTime()).toBeGreaterThan(update.createdAt.getTime());
   });
 
   it('delete a graph', async () => {
