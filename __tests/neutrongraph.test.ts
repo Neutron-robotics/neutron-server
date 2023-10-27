@@ -194,6 +194,69 @@ describe('Neutron graph controller', () => {
     expect(result.updatedAt).toBeDefined();
   });
 
+  it('get all graphs accessible to user with robot & organization infos', async () => {
+    const newGraphModel = {
+      ...flow,
+      robotId: robotMock.id,
+      partId: robotMock.parts[0].id,
+      title: `test graph ${randomUUID()}`
+    };
+
+    const res = await request(app)
+      .post('/graph/create')
+      .auth(token, { type: 'bearer' })
+      .send(newGraphModel);
+    expect(res.statusCode).toBe(200);
+
+    const resIncludeRobots = await request(app)
+      .get('/graph/all?includeRobots=true')
+      .auth(token, { type: 'bearer' });
+    expect(resIncludeRobots.statusCode).toBe(200);
+    expect(resIncludeRobots.body.graphs.length).toBe(1);
+    const bdyRobot = resIncludeRobots.body.graphs[0];
+    expect(bdyRobot.robot._id).toBe(robotMock.id);
+    expect(bdyRobot.robot.name).toBe(robotMock.name);
+    expect(bdyRobot.robot.imgUrl).toBe(robotMock.imgUrl);
+    expect(bdyRobot.organization).not.toBeDefined();
+    expect(Object.entries(bdyRobot.robot).length).toBe(3);
+
+    const resIncludeOrganization = await request(app)
+      .get('/graph/all?includeOrganization=true')
+      .auth(token, { type: 'bearer' });
+    expect(resIncludeOrganization.statusCode).toBe(200);
+    expect(resIncludeOrganization.body.graphs.length).toBe(1);
+    const bdyOrganization = resIncludeOrganization.body.graphs[0];
+    expect(bdyOrganization.robot).toBe(robotMock.id);
+    expect(bdyOrganization.organization.id).toBe(organizationMock.id);
+    expect(bdyOrganization.organization.name).toBe(organizationMock.name);
+    expect(bdyOrganization.organization.imgUrl).toBe(organizationMock.imgUrl);
+    expect(Object.entries(bdyOrganization.organization).length).toBe(3);
+
+    const resIncludeBoth = await request(app)
+      .get('/graph/all?includeRobots=true&includeOrganization=true')
+      .auth(token, { type: 'bearer' });
+
+    const bdyBoth = resIncludeBoth.body.graphs[0];
+    expect(resIncludeBoth.statusCode).toBe(200);
+    expect(resIncludeBoth.body.graphs.length).toBe(1);
+    expect(bdyBoth._id).toBeDefined();
+    expect(bdyBoth.title).toBe(newGraphModel.title);
+    expect(bdyBoth.nodes.length).toBe(6);
+    expect(bdyBoth.edges.length).toBe(6);
+    expect(bdyBoth.createdAt).toBeDefined();
+    expect(bdyBoth.updatedAt).toBeDefined();
+
+    expect(bdyOrganization.organization.id).toBe(organizationMock.id);
+    expect(bdyOrganization.organization.name).toBe(organizationMock.name);
+    expect(bdyOrganization.organization.imgUrl).toBe(organizationMock.imgUrl);
+    expect(Object.entries(bdyOrganization.organization).length).toBe(3);
+
+    expect(bdyRobot.robot._id).toBe(robotMock.id);
+    expect(bdyRobot.robot.name).toBe(robotMock.name);
+    expect(bdyRobot.robot.imgUrl).toBe(robotMock.imgUrl);
+    expect(Object.entries(bdyRobot.robot).length).toBe(3);
+  });
+
   it('update a graph', async () => {
     const newGraphModel = {
       ...flow,

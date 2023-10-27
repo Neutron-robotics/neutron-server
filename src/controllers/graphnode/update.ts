@@ -11,7 +11,8 @@ import { BadRequest, Forbidden } from '../../errors/bad-request';
 const updateSchema = Joi.object().keys({
   title: Joi.string().optional(),
   nodes: Joi.array().optional(),
-  edges: Joi.array().optional()
+  edges: Joi.array().optional(),
+  imgUrl: Joi.string().optional()
 });
 
 const updateParams = Joi.object().keys({
@@ -22,6 +23,7 @@ interface UpdateBody {
     title?: string,
     nodes?: INeutronNode[]
     edges?: INeutronEdge[]
+    imgUrl?: string
 }
 
 interface UpdateParams {
@@ -46,6 +48,7 @@ const update: RequestHandler<any> = async (req: Request<UpdateParams, {}, Update
     if (body.title) { graph.title = body.title; }
     if (body.nodes) { graph.nodes = body.nodes; }
     if (body.edges) { graph.edges = body.edges; }
+    if (body.imgUrl) { graph.imgUrl = body.imgUrl; }
     graph.modifiedBy = new mongoose.Types.ObjectId(userId);
 
     await graph.save();

@@ -1,4 +1,5 @@
 import { Request, RequestHandler } from 'express';
+import Joi from 'joi';
 import NeutronGraph, { INeutronNode } from '../../models/NeutronGraph';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
@@ -6,8 +7,19 @@ import User, { UserRole } from '../../models/User';
 import { BadRequest } from '../../errors/bad-request';
 import Organization from '../../models/Organization';
 
-const getAllGraphs: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
+const getAllGraphsQueryParams = Joi.object().keys({
+  includeRobots: Joi.boolean().optional(),
+  includeOrganization: Joi.boolean().optional()
+});
+
+interface GetAllGraphQueryParams {
+  includeRobots?: boolean
+  includeOrganization?: boolean
+}
+
+const getAllGraphs: RequestHandler = async (req: Request<{}, {}, {}, GetAllGraphQueryParams>, res, next) => {
   const userId = (req as any).user.sub as string;
+  const { query } = req;
 
   try {
     const user = await User.findOne({ _id: userId }).exec();
@@ -20,12 +32,39 @@ const getAllGraphs: RequestHandler = async (req: Request<{}, {}, {}>, res, next)
 
     const robotIds = organizations.reduce<string[]>((acc, cur) => ([...acc, ...cur.robots]), []);
 
-    const graphs = await NeutronGraph.find({ robot: { $in: robotIds } }).lean();
+    const graphsQuery = NeutronGraph.find({ robot: { $in: robotIds } });
 
-    res.send({
-      message: 'OK',
-      graphs
-    });
+    if (query.includeRobots) {
+      graphsQuery.populate({
+        path: 'robot',
+        select: '_id name imgUrl'
+      });
+    }
+
+    const graphs = await graphsQuery.lean().exec();
+
+    if (query.includeOrganization) {
+      const graphsWithOrganization = graphs.map(e => {
+        const graphOrganization = organizations.find(org => org.robots.includes(e.robot._id as unknown as string));
+        return {
+          ...e,
+          organization: {
+            id: graphOrganization?.id,
+            name: graphOrganization?.name,
+            imgUrl: graphOrganization?.imgUrl
+          }
+        };
+      });
+      res.send({
+        message: 'OK',
+        graphs: graphsWithOrganization
+      });
+    } else {
+      res.send({
+        message: 'OK',
+        graphs
+      });
+    }
   } catch (error: any) {
     next(error);
   }
@@ -34,6 +73,11 @@ const getAllGraphs: RequestHandler = async (req: Request<{}, {}, {}>, res, next)
 export default withAuth(
   requestMiddleware(
     getAllGraphs,
+    {
+      validation: {
+        query: getAllGraphsQueryParams
+      }
+    }
   ),
   { roles: [UserRole.Verified] }
 );
