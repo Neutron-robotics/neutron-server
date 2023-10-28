@@ -209,7 +209,7 @@ describe('Neutron graph controller', () => {
     expect(res.statusCode).toBe(200);
 
     const resIncludeRobots = await request(app)
-      .get('/graph/all?includeRobots=true')
+      .get('/graph/all?includeRobot=true')
       .auth(token, { type: 'bearer' });
     expect(resIncludeRobots.statusCode).toBe(200);
     expect(resIncludeRobots.body.graphs.length).toBe(1);
@@ -233,7 +233,7 @@ describe('Neutron graph controller', () => {
     expect(Object.entries(bdyOrganization.organization).length).toBe(3);
 
     const resIncludeBoth = await request(app)
-      .get('/graph/all?includeRobots=true&includeOrganization=true')
+      .get('/graph/all?includeRobot=true&includeOrganization=true')
       .auth(token, { type: 'bearer' });
 
     const bdyBoth = resIncludeBoth.body.graphs[0];

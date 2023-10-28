@@ -8,13 +8,13 @@ import { BadRequest } from '../../errors/bad-request';
 import Organization from '../../models/Organization';
 
 const getAllGraphsQueryParams = Joi.object().keys({
-  includeRobots: Joi.boolean().optional(),
-  includeOrganization: Joi.boolean().optional()
+  includeRobot: Joi.string().optional(),
+  includeOrganization: Joi.string().optional()
 });
 
 interface GetAllGraphQueryParams {
-  includeRobots?: boolean
-  includeOrganization?: boolean
+  includeRobot?: string
+  includeOrganization?: string
 }
 
 const getAllGraphs: RequestHandler = async (req: Request<{}, {}, {}, GetAllGraphQueryParams>, res, next) => {
@@ -34,7 +34,7 @@ const getAllGraphs: RequestHandler = async (req: Request<{}, {}, {}, GetAllGraph
 
     const graphsQuery = NeutronGraph.find({ robot: { $in: robotIds } });
 
-    if (query.includeRobots) {
+    if (query.includeRobot === 'true') {
       graphsQuery.populate({
         path: 'robot',
         select: '_id name imgUrl'
@@ -43,7 +43,7 @@ const getAllGraphs: RequestHandler = async (req: Request<{}, {}, {}, GetAllGraph
 
     const graphs = await graphsQuery.lean().exec();
 
-    if (query.includeOrganization) {
+    if (query.includeOrganization === 'true') {
       const graphsWithOrganization = graphs.map(e => {
         const graphOrganization = organizations.find(org => org.robots.includes(e.robot._id as unknown as string));
         return {
