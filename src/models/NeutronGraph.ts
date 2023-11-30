@@ -1,4 +1,5 @@
 import { Schema, Types, model } from 'mongoose';
+import { NeutronGraphType } from 'neutron-core';
 
 export interface INeutronNode {
   width: number;
@@ -32,6 +33,7 @@ export interface INeutronEdge {
 
 export interface INeutronGraph extends Document {
   title: string;
+  type: NeutronGraphType
   robot: Types.ObjectId;
   part?: Types.ObjectId;
   imgUrl?: string
@@ -46,6 +48,11 @@ export interface INeutronGraph extends Document {
 const NeutronGraphSchema = new Schema<INeutronGraph>({
   title: {
     type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['Flow', 'Connector', 'Component'],
     required: true
   },
   robot: {

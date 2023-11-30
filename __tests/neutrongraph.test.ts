@@ -63,6 +63,7 @@ describe('Neutron graph controller', () => {
     expect(res.statusCode).toBe(200);
     expect(graph.title).toBe(newGraphModel.title);
     expect(graph.robot.toString()).toBe(robotMock.id);
+    expect(graph.type).toBe('Flow');
     expect(graph.part?.toString()).toBe(robotMock.parts[0].id);
     expect(graph.nodes.length).toBe(6);
     expect(graph.edges.length).toBe(6);
@@ -91,6 +92,7 @@ describe('Neutron graph controller', () => {
     expect(res.body.id).toBeDefined();
     expect(res.statusCode).toBe(200);
     expect(graph.title).toBe(newGraphModel.title);
+    expect(graph.type).toBe('Flow');
     expect(graph.robot.toString()).toBe(robotMock.id);
     expect(graph.imgUrl).toBe('http://localhost:3003/file/file-1697885700601-962939962.png');
     expect(graph.part).not.toBeDefined();
@@ -123,6 +125,7 @@ describe('Neutron graph controller', () => {
     expect(resMyGraphs.statusCode).toBe(200);
     expect(resMyGraphs.body.graphs.length).toBe(1);
     expect(result._id).toBeDefined();
+    expect(result.type).toBe('Flow');
     expect(result.title).toBe(newGraphModel.title);
     expect(result.robot).toBe(robotMock.id);
     expect(result.part).toBe(robotMock.parts[0].id);
@@ -154,6 +157,7 @@ describe('Neutron graph controller', () => {
     expect(resOrganizationGraphs.statusCode).toBe(200);
     expect(resOrganizationGraphs.body.graphs.length).toBe(1);
     expect(result._id).toBeDefined();
+    expect(result.type).toBe('Flow');
     expect(result.title).toBe(newGraphModel.title);
     expect(result.robot).toBe(robotMock.id);
     expect(result.part).toBe(robotMock.parts[0].id);
@@ -185,6 +189,7 @@ describe('Neutron graph controller', () => {
     expect(resOrganizationGraphs.statusCode).toBe(200);
     expect(resOrganizationGraphs.body.graphs.length).toBe(1);
     expect(result._id).toBeDefined();
+    expect(result.type).toBe('Flow');
     expect(result.title).toBe(newGraphModel.title);
     expect(result.robot).toBe(robotMock.id);
     expect(result.part).toBe(robotMock.parts[0].id);
@@ -241,6 +246,7 @@ describe('Neutron graph controller', () => {
     expect(resIncludeBoth.body.graphs.length).toBe(1);
     expect(bdyBoth._id).toBeDefined();
     expect(bdyBoth.title).toBe(newGraphModel.title);
+    expect(bdyBoth.type).toBe('Flow');
     expect(bdyBoth.nodes.length).toBe(6);
     expect(bdyBoth.edges.length).toBe(6);
     expect(bdyBoth.createdAt).toBeDefined();
@@ -271,6 +277,7 @@ describe('Neutron graph controller', () => {
 
     const updatedModel = {
       title: `test graph updated ${randomUUID()}`,
+      type: 'Connector',
       nodes: [{
         width: 97,
         height: 208,
@@ -320,6 +327,7 @@ describe('Neutron graph controller', () => {
     if (!update) { throw new Error('Graph not found'); };
 
     expect(update.title).toBe(updatedModel.title);
+    expect(update.type).toBe('Connector');
     expect(update.nodes.length).toBe(2);
     expect(update.edges.length).toBe(6);
     expect(update.nodes[0].id).toBe('30ff93a-f757-4ca0-938d-9cfd729f604e');

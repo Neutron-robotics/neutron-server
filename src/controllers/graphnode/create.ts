@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
+import { NeutronGraphType } from 'neutron-core';
 import NeutronGraph, { INeutronEdge, INeutronNode } from '../../models/NeutronGraph';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
@@ -10,6 +11,7 @@ import Robot from '../../models/Robot';
 
 const createSchema = Joi.object().keys({
   title: Joi.string().required(),
+  type: Joi.string().required(),
   robotId: Joi.string().required(),
   partId: Joi.string().optional(),
   nodes: Joi.array().required(),
@@ -19,6 +21,7 @@ const createSchema = Joi.object().keys({
 
 interface CreateBody {
     title: string,
+    type: NeutronGraphType
     robotId: string,
     partId: string,
     nodes: INeutronNode[]
@@ -45,6 +48,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
 
     const graph = await NeutronGraph.create({
       title: body.title,
+      type: body.type,
       robot: robot._id,
       part: body.partId,
       createdBy: userId,

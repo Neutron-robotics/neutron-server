@@ -1,5 +1,6 @@
 const flow = {
   title: 'Wheeler base',
+  type: 'Flow',
   robotId: 'id-to-robotmodel',
   partId: 'id-to-partModel',
 
