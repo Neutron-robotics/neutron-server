@@ -14,6 +14,7 @@ import useRobotPartController from './controllers/robotParts';
 import useRos2Controller from './controllers/ros2';
 import useNeutronGraph from './controllers/graphnode';
 import useConnection from './controllers/connection';
+import useAgentController from './controllers/agent';
 
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }'
@@ -34,6 +35,7 @@ useRobotPartController(router);
 useRos2Controller(router);
 useNeutronGraph(router);
 useConnection(router);
+useAgentController(router);
 
 // Dev routes
 if (process.env.NODE_ENV === 'development') {

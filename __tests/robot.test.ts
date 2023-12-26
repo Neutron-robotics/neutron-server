@@ -11,6 +11,9 @@ import Robot, { ConnectionContextType } from '../src/models/Robot';
 import Organization from '../src/models/Organization';
 import { RobotPartCategory } from '../src/models/RobotPart';
 import Ros2SystemModel from '../src/models/Ros2/Ros2System';
+import { PublishSystemInformationRequest } from '../src/controllers/agent/publishSystemInformation';
+import { RobotStatus } from '../src/models/RobotStatus';
+import { sleep } from '../src/utils/time';
 
 describe('robot tests', () => {
   let user: any = {};
@@ -54,6 +57,7 @@ describe('robot tests', () => {
     expect(orga?.robots.map(e => e.toString()).includes(robot?.id.toString())).toBeTruthy();
     expect(res.statusCode).toBe(200);
     expect(robot).toBeDefined();
+    expect(robot?.linked).toBe(false);
     expect(robot?.name).toBe(robotName);
     expect(robot?.parts.length).toBe(0);
   });
@@ -95,24 +99,9 @@ describe('robot tests', () => {
     const robot = await Robot.findOne({ name: robotName }).exec();
     expect(res.statusCode).toBe(200);
     expect(robot).toBeDefined();
-    expect(robot?.linked);
+    expect(robot?.linked).toBe(false);
     expect(robot?.name).toBe(robotName);
     expect(robot?.parts.length).toBe(3);
-  });
-
-  it('link a robot', async () => {
-    const { robot } = await makeRobot(token, []);
-    expect(robot.linked).toBe(false);
-
-    const res = await request(app)
-      .post('/robot/activate')
-      .send({
-        secretKey: robot.secretKey
-      });
-
-    const activatedRobot = await Robot.findOne({ _id: robot.id }).exec();
-    expect(res.statusCode).toBe(200);
-    expect(activatedRobot?.linked).toBe(true);
   });
 
   it('delete a robot', async () => {
@@ -177,6 +166,53 @@ describe('robot tests', () => {
 
     const ros2system = await Ros2SystemModel.findOne({ robotId: robot.id });
     expect(ros2system).not.toBeNull();
+  });
+
+  it('get latest robot status', async () => {
+    const { robot } = await makeRobot(token, []);
+
+    await request(app)
+      .post('/agent/link')
+      .send({
+        secretKey: robot.secretKey
+      });
+
+    const info: PublishSystemInformationRequest = {
+      secretKey: robot.secretKey,
+      status: {
+        status: RobotStatus.Online,
+        battery: {
+          level: 100,
+          charging: true
+        }
+      }
+    };
+
+    await request(app)
+      .post('/agent/publishSystemInformation')
+      .send(info);
+
+    await sleep(100);
+    await request(app)
+      .post('/agent/publishSystemInformation')
+      .send({ ...info, status: { ...info.status, status: RobotStatus.Unknown } });
+
+    await sleep(100);
+    await request(app)
+      .post('/agent/publishSystemInformation')
+      .send({ ...info, status: { ...info.status, status: RobotStatus.Offline } });
+
+    const res = await request(app)
+      .get(`/robot/status/${robot.id}`)
+      .auth(token, { type: 'bearer' });
+
+    const { status } = res.body;
+
+    expect(res.statusCode).toBe(200);
+    expect(status.status).toBe('Offline');
+    expect(status.system).toBe(undefined);
+    expect(status.battery.level).toBe(100);
+    expect(status.battery.charging).toBe(true);
   });
 });
 
@@ -284,14 +320,4 @@ describe('part tests', () => {
     expect(res.statusCode).toBe(200);
     expect(robotPartDeleted?.parts.length).toBe(1);
   });
-
-  it.todo('Add topic');
-
-  it.todo('Add Publisher');
-
-  it.todo('Add Subscriber');
-
-  it.todo('Add Action');
-
-  it.todo('Add Publisher and Subscriber on the same topic');
 });
