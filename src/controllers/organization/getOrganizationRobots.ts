@@ -29,10 +29,15 @@ const getOrganizationRobots: RequestHandler<any> = async (
     if (!organization.users.find(e => e.userId.toString() === userId)) { throw new Forbidden(); };
 
     const robots = await Robot.find({ _id: { $in: organization.robots } }).lean();
+
     const robotsDto = robots.map(e => {
-      const { secretKey, ...robotDto } = e;
-      return robotDto;
+      if (e.linked) {
+        const { secretKey, ...robotDto } = e;
+        return robotDto;
+      }
+      return e;
     });
+
     return res.json({
       message: 'OK',
       robots: robotsDto

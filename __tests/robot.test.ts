@@ -214,6 +214,20 @@ describe('robot tests', () => {
     expect(status.battery.level).toBe(100);
     expect(status.battery.charging).toBe(true);
   });
+
+  it('Get robot by id', async () => {
+    const { robot, organization } = await makeRobot(token, []);
+
+    const res = await request(app)
+      .get(`/robot/${robot.id}`)
+      .auth(token, { type: 'bearer' })
+      .send();
+
+    const robotRes = res.body.robot;
+    expect(res.statusCode).toBe(200);
+    expect(robotRes).toBeDefined();
+    expect(robotRes.secretKey).toBeDefined();
+  });
 });
 
 describe('part tests', () => {

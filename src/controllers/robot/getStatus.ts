@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
+import { randomUUID } from 'crypto';
 import requestMiddleware from '../../middleware/request-middleware';
 import { BadRequest, Forbidden } from '../../errors/bad-request';
 import Robot, { ConnectionContextType } from '../../models/Robot';
@@ -7,7 +8,7 @@ import { withAuth } from '../../middleware/withAuth';
 import { UserRole } from '../../models/User';
 import Organization from '../../models/Organization';
 import ApplicationError from '../../errors/application-error';
-import RobotStatusModel from '../../models/RobotStatus';
+import RobotStatusModel, { IRobotStatus, RobotStatus } from '../../models/RobotStatus';
 
 const getStatusRobotSchemaParam = Joi.object().keys({
   robotId: Joi.string().required()
@@ -36,7 +37,13 @@ const getStatus: RequestHandler<any> = async (
       throw new Forbidden('You do not belong to the organization');
     }
 
-    const status = await RobotStatusModel.findOne({ robot: robot.id }).sort({ time: -1 }).lean().exec();
+    const status = await RobotStatusModel.findOne({ robot: robot.id }).sort({ time: -1 }).lean().exec()
+    ?? {
+      _id: randomUUID(),
+      time: new Date(),
+      status: RobotStatus.Offline,
+      robot: robot.id
+    } as IRobotStatus;
 
     res.json({
       message: 'OK',
