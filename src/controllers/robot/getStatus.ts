@@ -32,6 +32,10 @@ const getStatus: RequestHandler<any> = async (
       throw new BadRequest('Robot not found');
     }
 
+    if (!robot.linked) {
+      throw new BadRequest('Robot not linked');
+    }
+
     const organization = await Organization.getByRobotId(robot.id);
     if (!organization.users.some(e => e.userId.toString() === userId)) {
       throw new Forbidden('You do not belong to the organization');
@@ -40,7 +44,7 @@ const getStatus: RequestHandler<any> = async (
     const status = await RobotStatusModel.findOne({ robot: robot.id }).sort({ time: -1 }).lean().exec()
     ?? {
       _id: randomUUID(),
-      time: new Date(),
+      time: new Date('2020-01-01'),
       status: RobotStatus.Offline,
       robot: robot.id
     } as IRobotStatus;

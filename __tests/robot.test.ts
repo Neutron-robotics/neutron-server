@@ -228,6 +228,64 @@ describe('robot tests', () => {
     expect(robotRes).toBeDefined();
     expect(robotRes.secretKey).toBeDefined();
   });
+
+  it('Get all robots of a user', async () => {
+    const { robot } = await makeRobot(token, []);
+
+    const res = await request(app)
+      .get('/user/me/robots')
+      .auth(token, { type: 'bearer' });
+
+    const robotsRes = res.body.robots;
+    expect(res.statusCode).toBe(200);
+    expect(robotsRes).toBeDefined();
+    expect(robotsRes.length).toBe(1);
+    expect(robotsRes[0]._id).toBe(robot.id);
+    expect(robotsRes[0].status).not.toBeDefined();
+  });
+
+  it('Get all robots of a user with status', async () => {
+    const { robot } = await makeRobot(token, []);
+    const { robot: robot2 } = await makeRobot(token, []);
+
+    await request(app)
+      .post('/agent/link')
+      .send({
+        secretKey: robot.secretKey
+      });
+    await request(app)
+      .post('/agent/link')
+      .send({
+        secretKey: robot2.secretKey
+      });
+
+    const info: PublishSystemInformationRequest = {
+      secretKey: robot.secretKey,
+      status: {
+        status: RobotStatus.Online,
+        battery: {
+          level: 100,
+          charging: true
+        }
+      }
+    };
+    await request(app)
+      .post('/agent/publishSystemInformation')
+      .send(info);
+
+    const res = await request(app)
+      .get('/user/me/robots?includeStatus=true')
+      .auth(token, { type: 'bearer' });
+
+    const robotsRes = res.body.robots;
+    expect(res.statusCode).toBe(200);
+    expect(robotsRes).toBeDefined();
+    expect(robotsRes.length).toBe(2);
+    expect(robotsRes[0]._id).toBe(robot.id);
+    expect(robotsRes[0].status).toBeDefined();
+    expect(robotsRes[1]._id).toBe(robot2.id);
+    expect(robotsRes[1].status).toBeNull();
+  });
 });
 
 describe('part tests', () => {

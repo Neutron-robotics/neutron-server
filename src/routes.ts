@@ -27,6 +27,7 @@ const SWAGGER_YAML_FILEPATH = path.join(__dirname, '../openapi.yml');
 // Controllers
 useAuthentification(router);
 useAdminController(router);
+useUserController(router);
 useOrganization(router);
 useFileController(router);
 useUserController(router);
