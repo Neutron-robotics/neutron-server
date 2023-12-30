@@ -184,7 +184,8 @@ describe('robot tests', () => {
         battery: {
           level: 100,
           charging: true
-        }
+        },
+        hash: robot.generateHash()
       }
     };
 
@@ -266,7 +267,8 @@ describe('robot tests', () => {
         battery: {
           level: 100,
           charging: true
-        }
+        },
+        hash: robot.generateHash()
       }
     };
     await request(app)

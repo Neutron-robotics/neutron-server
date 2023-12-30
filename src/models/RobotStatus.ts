@@ -6,6 +6,10 @@ export interface IRobotLocationStatus {
     name: string;
 }
 
+export interface IRobotNetworkInfo {
+  hostname: string
+}
+
 export enum RobotStatus {
     Online = 'Online',
     Operating = 'Operating',

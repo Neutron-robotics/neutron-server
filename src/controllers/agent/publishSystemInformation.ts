@@ -4,7 +4,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import Robot from '../../models/Robot';
 import { BadRequest } from '../../errors/bad-request';
 import RobotStatusModel, {
-  IBatteryStatus, IRobotLocationStatus, IRobotSystemStatus, RobotStatus
+  IBatteryStatus, IRobotLocationStatus, IRobotNetworkInfo, IRobotSystemStatus, RobotStatus
 } from '../../models/RobotStatus';
 
 export interface PublishSystemInformationRequest {
@@ -14,6 +14,8 @@ export interface PublishSystemInformationRequest {
     battery?: IBatteryStatus
     system?: IRobotSystemStatus;
     location?: IRobotLocationStatus;
+    network?: IRobotNetworkInfo;
+    hash: string
   }
 }
 
@@ -31,7 +33,11 @@ const publishSystemInformationSchemaBody = Joi.object().keys({
     }).optional(),
     location: Joi.object({
       name: Joi.string().required()
-    }).optional()
+    }).optional(),
+    network: Joi.object({
+      hostname: Joi.string().required()
+    }).optional(),
+    hash: Joi.string()
   })
 });
 
@@ -49,6 +55,11 @@ const publishSystemInformation: RequestHandler<any> = async (
     }
     if (!robot.linked) { throw new BadRequest('Robot not linked'); }
 
+    if (body.status.network && body.status.network.hostname !== robot.hostname) {
+      robot.hostname = body.status.network.hostname;
+      await robot.save();
+    }
+
     const robotStatus = new RobotStatusModel({
       status: body.status.status,
       robot: robot._id,
@@ -58,6 +69,31 @@ const publishSystemInformation: RequestHandler<any> = async (
     });
 
     await robotStatus.save();
+
+    const latestHash = robot.generateHash();
+
+    console.log('latest hash', latestHash);
+    console.log('hash', body.status.hash);
+
+    if (body.status.hash !== latestHash) {
+      return res.json({
+        message: 'OK',
+        configuration: {
+          name: robot.name,
+          context: {
+            type: robot.context
+          },
+          parts: robot.parts.map(e => ({
+            id: e._id,
+            name: e.name,
+            category: e.category,
+            ros2Node: e.ros2Node,
+            ros2Package: e.ros2Package
+          }))
+        }
+      });
+    }
+
     return res.json({
       message: 'OK'
     });

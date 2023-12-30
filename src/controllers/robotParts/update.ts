@@ -58,6 +58,8 @@ const update: RequestHandler<any> = async (req: Request<UpdatePartSchema, {}, Up
     if (body.imgUrl) { part.imgUrl = body.imgUrl; }
     if (body.type) { part.type = body.type; }
     if (body.category) { part.category = body.category; }
+    if (body.ros2Node) { part.ros2Node = body.ros2Node; }
+    if (body.ros2Package) { part.ros2Package = body.ros2Package; }
 
     await robot.save();
 

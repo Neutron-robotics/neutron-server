@@ -1,6 +1,7 @@
 import {
   Document, Schema, model
 } from 'mongoose';
+import { createHash } from 'crypto';
 import Organization from './Organization';
 import { IRobotPart, RobotPartSchema } from './RobotPart';
 import Ros2SystemModel from './Ros2/Ros2System';
@@ -18,10 +19,15 @@ export interface IRobot extends Document {
     secretKey: string
     imgUrl: string
     description: string
+    hostname: string
     context: ConnectionContextType
 }
 
-const RobotSchema = new Schema<IRobot>({
+interface IRobotDocument extends IRobot {
+  generateHash(): string
+}
+
+const RobotSchema = new Schema<IRobotDocument>({
   name: {
     type: String,
     required: true
@@ -44,11 +50,38 @@ const RobotSchema = new Schema<IRobot>({
   description: {
     type: String
   },
+  hostname: {
+    type: String
+  },
   context: {
     type: String,
     enum: Object.values(ConnectionContextType)
   }
 });
+
+RobotSchema.method<IRobot>(
+  'generateHash',
+  function () {
+    const currentConfiguration: any = {
+      name: this.name,
+      context: {
+        type: this.context
+      },
+      parts: this.parts.map(e => ({
+        id: e._id,
+        name: e.name,
+        category: e.category,
+        ros2Node: e.ros2Node,
+        ros2Package: e.ros2Package
+      }))
+    };
+
+    console.log(this.context);
+    const jsonString = JSON.stringify(currentConfiguration);
+    console.log(jsonString);
+    return createHash('sha256').update(jsonString).digest('hex');
+  }
+);
 
 RobotSchema.post('deleteOne', async function postDelete(doc, next) {
   try {
@@ -73,6 +106,6 @@ RobotSchema.pre('save', async function onCreate(done) {
   });
 });
 
-const Robot = model<IRobot>('Robot', RobotSchema);
+const Robot = model<IRobotDocument>('Robot', RobotSchema);
 
 export default Robot;
