@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { makeUser, withLogin } from './__utils__/user_setup';
 import User from '../src/models/User';
 import app from '../src/app';
-import { flow } from './__mixture__/neutronGraphs';
+import { flow, connector } from './__mixture__/neutronGraphs';
 import { makeRobot } from './__utils__/robot_setup';
 import { RobotPartCategory } from '../src/models/RobotPart';
 import NeutronGraph from '../src/models/NeutronGraph';
@@ -356,5 +356,66 @@ describe('Neutron graph controller', () => {
     expect(deleteRes.statusCode).toBe(200);
     const deletedGraph = await NeutronGraph.findOne({ _id: res.body.id });
     expect(deletedGraph).toBeNull();
+  });
+
+  it('get a graph by robot', async () => {
+    const { robot } = await makeRobot(token, [{
+      type: 'Grapper',
+      category: RobotPartCategory.Actuator,
+      name: 'Robot grab grab',
+      imgUrl: 'https://static.neutron.com/robot/wdjxsiushf.png'
+    }]);
+
+    const newFlowModel = {
+      ...flow,
+      robotId: robot.id,
+      partId: robot.parts[0].id,
+      title: `test graph ${randomUUID()}`
+    };
+
+    const resFlow = await request(app)
+      .post('/graph/create')
+      .auth(token, { type: 'bearer' })
+      .send(newFlowModel);
+    expect(resFlow.statusCode).toBe(200);
+
+    const newGraphModel = {
+      ...connector,
+      robotId: robot.id,
+      partId: robot.parts[0].id,
+      title: `test graph ${randomUUID()}`
+    };
+
+    const resGraph = await request(app)
+      .post('/graph/create')
+      .auth(token, { type: 'bearer' })
+      .send(newGraphModel);
+    expect(resGraph.statusCode).toBe(200);
+
+    // 1. Get all robot graphs
+    const resAllRobotGraphs = await request(app)
+      .get(`/graph/robot/${robot.id}`)
+      .auth(token, { type: 'bearer' });
+
+    expect(resAllRobotGraphs.statusCode).toBe(200);
+    expect(resAllRobotGraphs.body.graphs.length).toBe(2);
+
+    // 2. Get robot graph Flow
+    const resAllRobotFlow = await request(app)
+      .get(`/graph/robot/${robot.id}?type=Flow`)
+      .auth(token, { type: 'bearer' });
+
+    expect(resAllRobotFlow.statusCode).toBe(200);
+    expect(resAllRobotFlow.body.graphs.length).toBe(1);
+    expect(resAllRobotFlow.body.graphs[0].type).toBe('Flow');
+
+    // 3. Get robot graph Connector
+    const resAllRobotConnector = await request(app)
+      .get(`/graph/robot/${robot.id}?type=Connector`)
+      .auth(token, { type: 'bearer' });
+
+    expect(resAllRobotConnector.statusCode).toBe(200);
+    expect(resAllRobotConnector.body.graphs.length).toBe(1);
+    expect(resAllRobotConnector.body.graphs[0].type).toBe('Connector');
   });
 });

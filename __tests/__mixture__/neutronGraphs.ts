@@ -169,6 +169,12 @@ const flow = {
   ]
 };
 
+const connector = {
+  ...flow,
+  type: 'Connector'
+};
+
 export {
-  flow
+  flow,
+  connector
 };

@@ -52,7 +52,7 @@ const NeutronGraphSchema = new Schema<INeutronGraph>({
   },
   type: {
     type: String,
-    enum: ['Flow', 'Connector', 'Component'],
+    enum: ['Flow', 'Connector'],
     required: true
   },
   robot: {

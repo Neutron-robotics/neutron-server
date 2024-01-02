@@ -76,9 +76,7 @@ RobotSchema.method<IRobot>(
       }))
     };
 
-    console.log(this.context);
     const jsonString = JSON.stringify(currentConfiguration);
-    console.log(jsonString);
     return createHash('sha256').update(jsonString).digest('hex');
   }
 );
