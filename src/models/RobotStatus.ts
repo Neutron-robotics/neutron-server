@@ -27,6 +27,16 @@ export interface IRobotSystemStatus {
     memory: number;
 }
 
+export interface IRobotProcess {
+  cpu: number;
+  mem: number;
+  mem_usage: number;
+  active: boolean;
+  pid: number;
+  name: string;
+  id: string;
+}
+
 export interface IRobotStatus extends Document {
     time: Date;
     status: RobotStatus;
@@ -35,6 +45,8 @@ export interface IRobotStatus extends Document {
     // connection?: INeutronConnection;
     system?: IRobotSystemStatus;
     location?: IRobotLocationStatus;
+    processes?: IRobotProcess[]
+    context?: IRobotProcess
   }
 
 const RobotStatusSchema = new Schema<IRobotStatus>({
@@ -68,26 +80,28 @@ const RobotStatusSchema = new Schema<IRobotStatus>({
   //     type: Schema.Types.ObjectId,
   //     ref: 'NeutronConnection'
   //   },
-  system: {
+  processes: [
+    {
+      cpu: { type: Number, required: true },
+      mem: { type: Number, required: true },
+      mem_usage: { type: Number, required: true },
+      active: { type: Boolean, required: true },
+      pid: { type: Number, required: true },
+      name: { type: String, required: true },
+      id: { type: String, required: true }
+    }
+  ],
+  context: {
     type: {
-      cpu: {
-        type: Number,
-        required: false
-      },
-      memory: {
-        type: Number,
-        required: false
-      }
+      cpu: { type: Number, required: true },
+      mem: { type: Number, required: true },
+      mem_usage: { type: Number, required: true },
+      active: { type: Boolean, required: true },
+      pid: { type: Number, required: true },
+      name: { type: String, required: true },
+      id: { type: String, required: true }
     },
-    default: undefined
-  },
-  location: {
-    type: {
-      name: {
-        type: String,
-        required: false
-      }
-    },
+    required: false,
     default: undefined
   }
 });

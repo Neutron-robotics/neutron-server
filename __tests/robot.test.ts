@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import request from 'supertest';
+import axios from 'axios';
 import { makeUser, withLogin } from './__utils__/user_setup';
 import { makeRobot } from './__utils__/robot_setup';
 import User from '../src/models/User';
@@ -14,6 +15,8 @@ import Ros2SystemModel from '../src/models/Ros2/Ros2System';
 import { PublishSystemInformationRequest } from '../src/controllers/agent/publishSystemInformation';
 import { RobotStatus } from '../src/models/RobotStatus';
 import { sleep } from '../src/utils/time';
+
+jest.mock('axios');
 
 describe('robot tests', () => {
   let user: any = {};
@@ -287,6 +290,95 @@ describe('robot tests', () => {
     expect(robotsRes[0].status).toBeDefined();
     expect(robotsRes[1]._id).toBe(robot2.id);
     expect(robotsRes[1].status).toBeNull();
+  });
+
+  it('should start a robot', async () => {
+    const { robot } = await makeRobot(token, []);
+
+    const mockAxios = jest.fn();
+    (axios.post as any).mockImplementation(mockAxios);
+    mockAxios.mockReturnValue(Promise.resolve({
+      status: 200
+    }));
+
+    const res = await request(app)
+      .post(`/robot/start/${robot.id}`)
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockAxios).toHaveBeenCalledWith('undefined/robot/start', {});
+  });
+
+  it('should start a robot with parts', async () => {
+    const { robot } = await makeRobot(token, [
+      {
+        type: 'RGBCamera',
+        category: RobotPartCategory.Vison,
+        name: 'test camera',
+        imgUrl: 'https://static.neutron.com/robot/w.png'
+      },
+      {
+        type: 'Grapper',
+        category: RobotPartCategory.Actuator,
+        name: 'Robot grab grab',
+        imgUrl: 'https://static.neutron.com/robot/wdjxsiushf.png'
+      }
+    ]);
+
+    const mockAxios = jest.fn();
+    (axios.post as any).mockImplementation(mockAxios);
+    mockAxios.mockReturnValue(Promise.resolve({
+      status: 200
+    }));
+
+    const res = await request(app)
+      .post(`/robot/start/${robot.id}`)
+      .auth(token, { type: 'bearer' })
+      .send({
+        partsId: robot.parts.map(e => e._id)
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockAxios).toHaveBeenCalledWith('undefined/robot/start', {
+      processesId: [robot.parts[0]._id, robot.parts[1]._id]
+    });
+  });
+
+  it('should throw a NotFound error if the robot does not exist', async () => {
+    const mockAxios = jest.fn();
+    (axios.post as any).mockImplementation(mockAxios);
+    mockAxios.mockReturnValue(Promise.resolve({
+      status: 200
+    }));
+
+    const res = await request(app)
+      .post(`/robot/start/${new mongoose.Types.ObjectId()}`)
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(404);
+    expect(mockAxios).not.toHaveBeenCalled();
+  });
+
+  it('should throw an error if the robot cannot be started', async () => {
+    const { robot } = await makeRobot(token, []);
+    const mockAxios = jest.fn();
+    (axios.post as any).mockImplementation(mockAxios);
+    mockAxios.mockReturnValue(Promise.resolve({
+      status: 500,
+      data: {
+        message: 'error'
+      }
+    }));
+
+    const res = await request(app)
+      .post(`/robot/start/${robot.id}`)
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.body).toStrictEqual({
+      error: '[object Object]'
+    });
+    expect(mockAxios).toHaveBeenCalled();
   });
 });
 

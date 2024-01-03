@@ -4,7 +4,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import Robot from '../../models/Robot';
 import { BadRequest } from '../../errors/bad-request';
 import RobotStatusModel, {
-  IBatteryStatus, IRobotLocationStatus, IRobotNetworkInfo, IRobotSystemStatus, RobotStatus
+  IBatteryStatus, IRobotLocationStatus, IRobotNetworkInfo, IRobotProcess, IRobotSystemStatus, RobotStatus
 } from '../../models/RobotStatus';
 
 export interface PublishSystemInformationRequest {
@@ -15,6 +15,8 @@ export interface PublishSystemInformationRequest {
     system?: IRobotSystemStatus;
     location?: IRobotLocationStatus;
     network?: IRobotNetworkInfo;
+    processes?: IRobotProcess[]
+    context?: IRobotProcess
     hash: string
   }
 }
@@ -37,7 +39,9 @@ const publishSystemInformationSchemaBody = Joi.object().keys({
     network: Joi.object({
       hostname: Joi.string().required()
     }).optional(),
-    hash: Joi.string()
+    hash: Joi.string(),
+    processes: Joi.array().optional(),
+    context: Joi.object().allow(null).optional()
   })
 });
 
@@ -65,15 +69,14 @@ const publishSystemInformation: RequestHandler<any> = async (
       robot: robot._id,
       battery: body.status.battery,
       system: body.status.system,
-      location: body.status.location
+      location: body.status.location,
+      processes: body.status.processes,
+      context: body.status.context ?? undefined
     });
 
     await robotStatus.save();
 
     const latestHash = robot.generateHash();
-
-    console.log('latest hash', latestHash);
-    console.log('hash', body.status.hash);
 
     if (body.status.hash !== latestHash) {
       return res.json({

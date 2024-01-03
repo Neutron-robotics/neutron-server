@@ -9,11 +9,6 @@ import { makeUser, withLogin } from './__utils__/user_setup';
 import Connection from '../src/models/Connection';
 import { makeRobot } from './__utils__/robot_setup';
 
-function sleep(ms: number) {
-  // eslint-disable-next-line no-promise-executor-return
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 jest.mock('axios');
 jest.mock('child_process');
 describe('Connection tests', () => {
