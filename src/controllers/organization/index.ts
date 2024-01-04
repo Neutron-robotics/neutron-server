@@ -7,10 +7,12 @@ import demote from './demote';
 import update from './update';
 import getMember from './getMember';
 import getOrganizationRobots from './getOrganizationRobots';
+import getById from './getById';
 
 const useOrganization = (router: Router) => {
   router.post('/organization/create', create);
   router.get('/organization/me', me);
+  router.get('/organization/:organizationId', getById);
   router.get('/organization/:organization/getMember', getMember);
   router.get('/organization/:organization/robots', getOrganizationRobots);
 

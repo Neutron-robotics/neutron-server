@@ -58,13 +58,29 @@ describe('organization tests', () => {
       .get('/organization/me')
       .auth(token, { type: 'bearer' });
 
-    const organizations = await Organization.find({
-      name: organization.name
-    }).exec();
-
-    expect(organizations.length).toBe(1);
     expect(res.statusCode).toBe(200);
+    expect(res.body.organizations.length).toBe(1);
     await Organization.deleteOne({ name: organization.name }).exec();
+  });
+
+  it('get by id', async () => {
+    const organization = await makeOrganization(token);
+
+    const res = await request(app)
+      .get(`/organization/${organization._id}`)
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.organization.name).toBe(organization.name);
+    await Organization.deleteOne({ name: organization.name }).exec();
+  });
+
+  it('get by id not found', async () => {
+    const res = await request(app)
+      .get(`/organization/${new mongoose.Types.ObjectId()}`)
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(404);
   });
 
   it('update an organization', async () => {
