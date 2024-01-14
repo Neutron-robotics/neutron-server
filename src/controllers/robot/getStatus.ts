@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import { randomUUID } from 'crypto';
+import moment from 'moment';
 import requestMiddleware from '../../middleware/request-middleware';
 import { BadRequest, Forbidden } from '../../errors/bad-request';
 import Robot, { ConnectionContextType } from '../../models/Robot';
@@ -41,7 +42,7 @@ const getStatus: RequestHandler<any> = async (
       throw new Forbidden('You do not belong to the organization');
     }
 
-    const status = await RobotStatusModel.findOne({ robot: robot.id }).sort({ time: -1 }).lean().exec()
+    const status = await robot.getLatestStatus()
     ?? {
       _id: randomUUID(),
       time: new Date('2020-01-01'),

@@ -4,7 +4,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import Robot from '../../models/Robot';
 import { BadRequest } from '../../errors/bad-request';
 import RobotStatusModel, {
-  IBatteryStatus, IRobotLocationStatus, IRobotNetworkInfo, IRobotProcess, IRobotSystemStatus, RobotStatus
+  IBatteryStatus, IRobotContextProcess, IRobotLocationStatus, IRobotNetworkInfo, IRobotProcess, IRobotSystemStatus, RobotStatus
 } from '../../models/RobotStatus';
 
 export interface PublishSystemInformationRequest {
@@ -16,7 +16,7 @@ export interface PublishSystemInformationRequest {
     location?: IRobotLocationStatus;
     network?: IRobotNetworkInfo;
     processes?: IRobotProcess[]
-    context?: IRobotProcess
+    context?: IRobotContextProcess
     hash: string
   }
 }

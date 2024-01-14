@@ -37,17 +37,20 @@ export interface IRobotProcess {
   id: string;
 }
 
+export interface IRobotContextProcess extends IRobotProcess {
+  port: number
+}
+
 export interface IRobotStatus extends Document {
     time: Date;
     status: RobotStatus;
     robot: Types.ObjectId
     battery?: IBatteryStatus;
-    // connection?: INeutronConnection;
     system?: IRobotSystemStatus;
     location?: IRobotLocationStatus;
     processes?: IRobotProcess[]
-    context?: IRobotProcess
-  }
+    context?: IRobotContextProcess
+}
 
 const RobotStatusSchema = new Schema<IRobotStatus>({
   time: {
@@ -76,10 +79,6 @@ const RobotStatusSchema = new Schema<IRobotStatus>({
     },
     default: undefined
   },
-  //   connection: {
-  //     type: Schema.Types.ObjectId,
-  //     ref: 'NeutronConnection'
-  //   },
   processes: [
     {
       cpu: { type: Number, required: true },
@@ -99,7 +98,8 @@ const RobotStatusSchema = new Schema<IRobotStatus>({
       active: { type: Boolean, required: true },
       pid: { type: Number, required: true },
       name: { type: String, required: true },
-      id: { type: String, required: true }
+      id: { type: String, required: true },
+      port: { type: Number, required: true }
     },
     required: false,
     default: undefined

@@ -2,9 +2,11 @@ import {
   Document, Schema, model
 } from 'mongoose';
 import { createHash } from 'crypto';
+import moment from 'moment';
 import Organization from './Organization';
 import { IRobotPart, RobotPartSchema } from './RobotPart';
 import Ros2SystemModel from './Ros2/Ros2System';
+import RobotStatusModel, { IRobotStatus, RobotStatus } from './RobotStatus';
 
 export enum ConnectionContextType {
     Ros2 = 'ros2',
@@ -25,6 +27,7 @@ export interface IRobot extends Document {
 
 interface IRobotDocument extends IRobot {
   generateHash(): string
+  getLatestStatus(): Promise<IRobotStatus | undefined>
 }
 
 const RobotSchema = new Schema<IRobotDocument>({
@@ -60,6 +63,20 @@ const RobotSchema = new Schema<IRobotDocument>({
 });
 
 RobotSchema.method<IRobot>(
+  'getLatestStatus',
+  async function () {
+    const latestStatus: IRobotStatus | null = await RobotStatusModel.findOne({ robot: this._id }).sort({ time: -1 }).lean().exec();
+    if (latestStatus) {
+      const fiveMinutesAgo = moment().subtract(5, 'minutes');
+      if (moment(latestStatus.time).isBefore(fiveMinutesAgo)) {
+        latestStatus.status = RobotStatus.Offline;
+      }
+    }
+    return latestStatus;
+  }
+);
+
+RobotSchema.method<IRobot>(
   'generateHash',
   function () {
     const currentConfiguration: any = {
@@ -77,7 +94,8 @@ RobotSchema.method<IRobot>(
     };
 
     const jsonString = JSON.stringify(currentConfiguration);
-    return createHash('sha256').update(jsonString).digest('hex');
+    const hash = createHash('sha256').update(jsonString).digest('hex');
+    return hash;
   }
 );
 

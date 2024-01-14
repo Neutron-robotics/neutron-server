@@ -14,8 +14,8 @@ export const partsSchema = Joi.object().keys({
   category: Joi.string().valid(...Object.values(RobotPartCategory)).required(),
   name: Joi.string().required(),
   imgUrl: Joi.string(),
-  ros2Node: Joi.string().optional(),
-  ros2Package: Joi.string().optional()
+  ros2Node: Joi.string().allow('').optional(),
+  ros2Package: Joi.string().allow('').optional()
 });
 
 const createSchema = Joi.object().keys({

@@ -14,15 +14,14 @@ import { BadRequest, Unauthorized } from '../../errors/bad-request';
 import { randomIntFromInterval } from '../../utils/random';
 import Connection from '../../models/Connection';
 import * as connectionApi from '../../api/connection';
+import { RobotStatus } from '../../models/RobotStatus';
 
 export const createSchema = Joi.object().keys({
-  robotId: Joi.string().required(),
-  robotPort: Joi.number().required() // temp but will facilitate prior testing
+  robotId: Joi.string().required()
 });
 
 interface CreateConnectionBody {
     robotId: string
-    robotPort: number
 }
 
 const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>, res, next) => {
@@ -49,18 +48,24 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     const robot = await Robot.findById(body.robotId);
     if (!robot) { throw new BadRequest('Robot not found'); };
 
+    const robotStatus = await robot.getLatestStatus();
+    if (!robotStatus || robotStatus.status !== RobotStatus.Operating || !robotStatus.context?.port) { throw new BadRequest('The robot is not ready for connection'); }
+
+    const existingActiveConnection = await Connection.findOne({ robotId: body.robotId, isActive: true });
+    if (existingActiveConnection) { throw new BadRequest('An active connection already exist'); };
+
     const connectionPort = randomIntFromInterval(10000, 19000);
 
-    const execParams = `${binPath} --id ${connectionId} --robot-host ${hostname} --robot-port ${body.robotPort} --application-port ${connectionPort} --redis-connection-string redis://localhost:6379`;
-
+    const execParams = `${binPath} --id ${connectionId} --robot-host ${robot.hostname} --robot-port ${robotStatus.context.port} --application-port ${connectionPort} --redis-connection-string redis://localhost:6379`;
     const neutronProcess = spawn(execParams, { shell: true });
 
     if (!neutronProcess.pid) { throw new ApplicationError('No PID for neutron process'); };
     const timeout = 4000; // 4 seconds
-    const readyLine = 'neutron connection is ready';
+    const readyLine = `neutron connection ${connectionId} ready`;
 
     const waitForReadyLine = new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
+        neutronProcess.kill();
         reject(new ApplicationError('Timeout waiting the connection server to start'));
       }, timeout);
 
@@ -73,6 +78,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
       });
 
       neutronProcess.once('error', err => {
+        neutronProcess.kill();
         reject(err);
       });
     });

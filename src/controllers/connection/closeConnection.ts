@@ -42,6 +42,7 @@ const closeConnection: RequestHandler<any> = async (req: Request<CloseConnection
 
     process.kill(+connection.pid, 'SIGINT');
 
+    connection.isActive = false;
     connection.closedAt = new Date();
     await connection.save();
 

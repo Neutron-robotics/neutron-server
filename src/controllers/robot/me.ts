@@ -1,12 +1,13 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
+import moment from 'moment';
 import { withAuth } from '../../middleware/withAuth';
 import { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { Forbidden, NotFound } from '../../errors/bad-request';
 import Organization from '../../models/Organization';
 import Robot from '../../models/Robot';
-import RobotStatusModel from '../../models/RobotStatus';
+import RobotStatusModel, { RobotStatus } from '../../models/RobotStatus';
 
 const getMyRobotsQueryParams = Joi.object().keys({
   includeStatus: Joi.string().optional()
@@ -33,13 +34,14 @@ const me: RequestHandler<any> = async (
 
     const robotsIds = myOrganizations.map(({ robots }) => robots).flat();
 
-    const robots = await Robot.find({ _id: { $in: robotsIds } }).lean();
+    const robots = await Robot.find({ _id: { $in: robotsIds } });
 
     const robotsDto = await Promise.all(robots.map(async e => {
       if (e.linked) {
         if (query.includeStatus === 'true') {
-          const latestStatus = await RobotStatusModel.findOne({ robot: e._id }).sort({ time: -1 }).lean().exec();
-          const { secretKey, ...robotDto } = e;
+          const latestStatus = await e.getLatestStatus();
+          // remove additional properties of the robot (e)
+          const { secretKey, ...robotDto } = e.toJSON();
           return {
             ...robotDto,
             status: latestStatus
