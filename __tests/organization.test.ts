@@ -360,12 +360,14 @@ describe('organization tests', () => {
     expect(res.body.robots.length).toBe(2);
     expect(res.body.robots[0].name).toBe(robot.name);
     expect(res.body.robots[0].description).toBe(robot.description);
-    expect(res.body.robots[0].secretKey).not.toBeDefined();
+    expect(res.body.robots[0].secretKey).toBeDefined();
+    expect(res.body.robots[0].linked).toBeFalsy();
     expect(res.body.robots[0].parts.length).toBe(1);
 
     expect(res.body.robots[1].name).toBe(secondRobot.name);
     expect(res.body.robots[1].description).toBe(secondRobot.description);
-    expect(res.body.robots[1].secretKey).not.toBeDefined();
+    expect(res.body.robots[1].secretKey).toBeDefined();
+    expect(res.body.robots[1].linked).toBeFalsy();
     expect(res.body.robots[1].parts.length).toBe(1);
   });
 });

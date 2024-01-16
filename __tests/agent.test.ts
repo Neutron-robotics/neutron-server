@@ -88,7 +88,7 @@ describe('agent test', () => {
         ros2Package: e.ros2Package
       }))
     };
-    const configStr = JSON.stringify(robotConfig, Object.keys(robotConfig).sort());
+    const configStr = JSON.stringify(robotConfig);
     const hash = createHash('sha256').update(configStr).digest('hex');
 
     const info: PublishSystemInformationRequest = {

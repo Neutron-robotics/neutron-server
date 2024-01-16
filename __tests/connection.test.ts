@@ -8,6 +8,7 @@ import User from '../src/models/User';
 import { makeUser, withLogin } from './__utils__/user_setup';
 import Connection from '../src/models/Connection';
 import { makeRobot } from './__utils__/robot_setup';
+import { RobotStatus } from '../src/models/RobotStatus';
 
 jest.mock('axios');
 jest.mock('child_process');
@@ -31,46 +32,56 @@ describe('Connection tests', () => {
   });
 
   it('create a connection and instanciate process', async () => {
+    const { robot } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+
     const mockAxios = jest.fn();
     (axios.get as any).mockImplementation(mockAxios);
     mockAxios.mockReturnValue(Promise.resolve({
       status: 200
     }));
 
-    const fakePID = 12345;
-    const fakeReadyLine = 'neutron connection is ready';
+    (axios.post as any).mockImplementation(mockAxios);
+    mockAxios.mockReturnValue(Promise.resolve({
+      status: 200
+    }));
 
-    (spawn as any).mockReturnValue({
-      pid: fakePID,
-      on: (event: any, callback: any) => {},
-      once: (event: any, callback: any) => {},
-      stdout: {
-        on: (event: any, callback: any) => {
-          if (event === 'data') {
-            setTimeout(() => {
-              callback(Buffer.from(fakeReadyLine));
-            }, 1000);
+    const fakePID = 12345;
+
+    (spawn as any).mockImplementation((command: string) => {
+      const idRegex = /--id\s(\w+)/;
+      const match = command.match(idRegex);
+      const id = match && match[1];
+
+      const fakeReadyLine = `neutron connection ${id} ready`;
+      return {
+        pid: fakePID,
+        on: (event: any, callback: any) => {},
+        once: (event: any, callback: any) => {},
+        stdout: {
+          on: (event: any, callback: any) => {
+            if (event === 'data') {
+              setTimeout(async () => {
+                callback(Buffer.from(fakeReadyLine));
+              }, 1000);
+            }
           }
         }
-      }
+      };
     });
-
-    const { robot } = await makeRobot(token, []);
 
     const res = await request(app)
       .post('/connection/create')
       .auth(token, { type: 'bearer' })
       .send({
-        robotId: robot._id,
-        robotPort: 8080
+        robotId: robot._id
       });
 
     expect(res.statusCode).toBe(200);
     expect(res.body.connection.hostname).toBe('localhost');
     expect(res.body.connection.port).toBeDefined();
     expect(res.body.connection.registerId).toBeDefined();
-    expect(res.body.connection._id).toBeDefined();
-    const connection = await Connection.findById(res.body.connection._id);
+    expect(res.body.connection.connectionId).toBeDefined();
+    const connection = await Connection.findById(res.body.connection.connectionId);
     if (!connection) { throw new Error('Connection undefined'); };
     expect(connection).toBeDefined();
     expect(connection.isActive).toBe(true);
@@ -86,36 +97,46 @@ describe('Connection tests', () => {
     mockAxios.mockReturnValue(Promise.resolve({
       status: 200
     }));
+    (axios.post as any).mockImplementation(mockAxios);
+    mockAxios.mockReturnValue(Promise.resolve({
+      status: 200
+    }));
+
     const mockSpawn = jest.fn();
     (spawn as any).mockImplementation(mockSpawn);
     const fakePID = 12345;
-    const fakeReadyLine = 'neutron connection is ready';
-    const { robot } = await makeRobot(token, []);
+    const { robot } = await makeRobot(token, [], undefined, RobotStatus.Operating);
 
-    mockSpawn.mockReturnValue({
-      pid: fakePID,
-      on: (event: any, callback: any) => {},
-      once: (event: any, callback: any) => {},
-      stdout: {
-        on: (event: any, callback: any) => {
-          if (event === 'data') {
-            setTimeout(() => {
-              callback(Buffer.from(fakeReadyLine));
-            }, 1000);
+    (spawn as any).mockImplementation((command: string) => {
+      const idRegex = /--id\s(\w+)/;
+      const match = command.match(idRegex);
+      const id = match && match[1];
+
+      const fakeReadyLine = `neutron connection ${id} ready`;
+      return {
+        pid: fakePID,
+        on: (event: any, callback: any) => {},
+        once: (event: any, callback: any) => {},
+        stdout: {
+          on: (event: any, callback: any) => {
+            if (event === 'data') {
+              setTimeout(async () => {
+                callback(Buffer.from(fakeReadyLine));
+              }, 1000);
+            }
           }
         }
-      }
+      };
     });
 
     const res = await request(app)
       .post('/connection/create')
       .auth(token, { type: 'bearer' })
       .send({
-        robotId: robot._id,
-        robotPort: 8080
+        robotId: robot._id
       });
 
-    const connection = await Connection.findById(res.body.connection._id);
+    const connection = await Connection.findById(res.body.connection.connectionId);
     expect(connection?.isActive).toBeTruthy();
     expect(connection?.port).toBeDefined();
 
@@ -130,47 +151,59 @@ describe('Connection tests', () => {
   });
 
   it('close an existing connection', async () => {
-    const { robot } = await makeRobot(token, []);
+    const { robot } = await makeRobot(token, [], undefined, RobotStatus.Operating);
     process.kill = jest.fn();
     const mockAxios = jest.fn();
     (axios.get as any).mockImplementation(mockAxios);
     mockAxios.mockReturnValue(Promise.resolve({
       status: 200
     }));
+    (axios.post as any).mockImplementation(mockAxios);
+    mockAxios.mockReturnValue(Promise.resolve({
+      status: 200
+    }));
+
     const mockSpawn = jest.fn();
     (spawn as any).mockImplementation(mockSpawn);
     const fakePID = 12345;
     const fakeReadyLine = 'neutron connection is ready';
 
     let onCloseCallback = () => {};
-    mockSpawn.mockReturnValue({
-      pid: fakePID,
-      on: (event: any, callback: any) => {},
-      once: (event: any, callback: any) => {
-        if (event === 'close') {
-          onCloseCallback = callback;
-        }
-      },
-      stdout: {
-        on: (event: any, callback: any) => {
-          if (event === 'data') {
-            setTimeout(() => {
-              callback(Buffer.from(fakeReadyLine));
-            }, 1000);
+
+    (spawn as any).mockImplementation((command: string) => {
+      const idRegex = /--id\s(\w+)/;
+      const match = command.match(idRegex);
+      const id = match && match[1];
+
+      const fakeReadyLine = `neutron connection ${id} ready`;
+      return {
+        pid: fakePID,
+        on: (event: any, callback: any) => {},
+        once: (event: any, callback: any) => {
+          if (event === 'close') {
+            onCloseCallback = callback;
+          }
+        },
+        stdout: {
+          on: (event: any, callback: any) => {
+            if (event === 'data') {
+              setTimeout(async () => {
+                callback(Buffer.from(fakeReadyLine));
+              }, 1000);
+            }
           }
         }
-      }
+      };
     });
 
     const res = await request(app)
       .post('/connection/create')
       .auth(token, { type: 'bearer' })
       .send({
-        robotId: robot._id,
-        robotPort: 8080
+        robotId: robot._id
       });
 
-    const connection = await Connection.findById(res.body.connection._id);
+    const connection = await Connection.findById(res.body.connection.connectionId);
     expect(connection?.isActive).toBeTruthy();
 
     const resClose = await request(app)
@@ -181,7 +214,7 @@ describe('Connection tests', () => {
 
     expect(resClose.statusCode).toBe(200);
 
-    const closedConnection = await Connection.findById(res.body.connection._id);
+    const closedConnection = await Connection.findById(res.body.connection.connectionId);
     expect(closedConnection?.isActive).toBeFalsy();
     expect(closedConnection?.closedAt).toBeDefined();
     expect(process.kill).toHaveBeenCalledWith(+(closedConnection?.pid ?? ''), 'SIGINT');

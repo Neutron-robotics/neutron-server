@@ -114,7 +114,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     res.send({
       message: 'OK',
       connection: {
-        _id: newConnection._id,
+        connectionId: newConnection._id,
         hostname,
         port: connectionPort,
         registerId

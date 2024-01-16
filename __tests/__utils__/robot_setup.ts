@@ -5,6 +5,7 @@ import Robot from '../../src/models/Robot';
 import { makeOrganization } from './organization_setup';
 import Organization from '../../src/models/Organization';
 import { RobotPartCategory } from '../../src/models/RobotPart';
+import { RobotStatus } from '../../src/models/RobotStatus';
 
 export interface IRobotPartModel {
   type: string
@@ -13,7 +14,7 @@ export interface IRobotPartModel {
     imgUrl: string
 }
 
-const makeRobot = async (token: string, parts: IRobotPartModel[], organizationName?: string) => {
+const makeRobot = async (token: string, parts: IRobotPartModel[], organizationName?: string, robotStatus?: RobotStatus) => {
   const organization = organizationName ? await Organization.findOne({ name: organizationName }).exec() : await makeOrganization(token);
 
   const robotName = `test robot ${generateRandomString(6)}`;
@@ -31,6 +32,40 @@ const makeRobot = async (token: string, parts: IRobotPartModel[], organizationNa
 
   const robot = await Robot.findOne({ name: robotName }).exec();
   if (!robot) { throw new Error('The test robot failed to be created'); };
+  if (robotStatus) {
+    await request(app)
+      .post('/agent/link')
+      .send({
+        secretKey: robot.secretKey
+      });
+    await request(app)
+      .post('/agent/publishSystemInformation')
+      .send({
+        secretKey: robot.secretKey,
+        status: {
+          status: robotStatus,
+          context: {
+            cpu: 5,
+            mem: 2,
+            mem_usage: 2000,
+            active: true,
+            pid: 9583,
+            name: 'my context',
+            id: 'tototototo',
+            port: 9510
+          },
+          system: {
+            cpu: 34,
+            memory: 10
+          },
+          processes: [],
+          network: {
+            hostname: 'localhost'
+          },
+          hash: robot.generateHash()
+        }
+      });
+  }
 
   return {
     robot,

@@ -90,7 +90,7 @@ describe('ros2 protocol related tests', () => {
 
     const topic = await ROS2TopicModel.findOne({ _id: res.body.id });
     expect(topic?.name).toBe('testopic');
-    expect(topic?.messageType.toString()).toBe(messageTypeId);
+    expect(topic?.messageType._id.toString()).toBe(messageTypeId);
   });
 
   it('Create a Publisher', async () => {
@@ -104,7 +104,7 @@ describe('ros2 protocol related tests', () => {
 
     const publisher = await ROS2PublisherModel.findOne({ _id: res.body.id });
     expect(publisher?.name).toBe('testpublisher');
-    expect(publisher?.topic.toString()).toBe(topicId);
+    expect(publisher?.topic._id.toString()).toBe(topicId);
     expect(publisher?.frequency).toBe(5);
 
     const part = await ros2Mock.getPart();
@@ -121,7 +121,7 @@ describe('ros2 protocol related tests', () => {
     expect(res.body.id).toBeDefined();
     const subscriber = await ROS2SubscriberModel.findOne({ _id: res.body.id });
     expect(subscriber?.name).toBe('testsubscriber');
-    expect(subscriber?.topic.toString()).toBe(topicId);
+    expect(subscriber?.topic._id.toString()).toBe(topicId);
 
     const part = await ros2Mock.getPart();
     expect(part.subscribers.includes(subscriber?.id));
@@ -136,7 +136,7 @@ describe('ros2 protocol related tests', () => {
 
     const action = await ROS2ActionModel.findOne({ _id: res.body.id });
     expect(action?.name).toBe('testaction');
-    expect(action?.actionType?.toString()).toBe(actionTypeId);
+    expect(action?.actionType._id?.toString()).toBe(actionTypeId);
 
     const part = await ros2Mock.getPart();
     expect(part.actions.includes(action?.id));
@@ -151,7 +151,7 @@ describe('ros2 protocol related tests', () => {
 
     const service = await ROS2ServiceModel.findOne({ _id: res.body.id });
     expect(service?.name).toBe('testService');
-    expect(service?.serviceType?.toString()).toBe(serviceTypeId);
+    expect(service?.serviceType._id?.toString()).toBe(serviceTypeId);
     const part = await ros2Mock.getPart();
     expect(part.services.includes(service?.id));
   });
@@ -364,6 +364,6 @@ describe('ros2 protocol related tests', () => {
 
     const subscriber = await ROS2SubscriberModel.findById(subscriberId);
     const subscriberPopulated: any = await ROS2SubscriberModel.populate(subscriber, [{ path: 'topic' }]);
-    expect(subscriberPopulated.topic.messageType.toString()).toBe(messageTypeId2);
+    expect(subscriberPopulated.topic.messageType._id.toString()).toBe(messageTypeId2);
   });
 });

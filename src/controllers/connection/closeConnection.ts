@@ -15,8 +15,6 @@ interface CloseConnectionParams {
     connectionId: string
 }
 
-// TODO : SOMEHOW TEST IF THE EVENTS WORKS IN CREATE ROUTE
-
 const closeConnection: RequestHandler<any> = async (req: Request<CloseConnectionParams, {}, {}>, res, next) => {
   const { params } = req;
   const userId = (req as any).user.sub as string;

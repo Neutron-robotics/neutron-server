@@ -8,30 +8,20 @@ import { Forbidden, NotFound } from '../../errors/bad-request';
 import Organization from '../../models/Organization';
 import Robot from '../../models/Robot';
 
-interface StartRobotParams {
+interface StopRobotParams {
     robotId: string
 }
 
-interface StartRobotBody {
-    partsId?: string[]
-}
-
-const startSchemaBody = Joi.object<StartRobotBody>().keys({
-  partsId: Joi.array()
-    .items(Joi.string())
-    .optional()
-});
-
-const startSchemaParams = Joi.object<StartRobotParams>().keys({
+const stopSchemaParams = Joi.object<StopRobotParams>().keys({
   robotId: Joi.string().required()
 });
 
-const start: RequestHandler<any> = async (
-  req: Request<StartRobotParams, {}, StartRobotBody>,
+const stopRobot: RequestHandler<any> = async (
+  req: Request<StopRobotParams, {}, {}>,
   res,
   next
 ) => {
-  const { params, body } = req;
+  const { params } = req;
   const userId = (req as any).user.sub as string;
 
   try {
@@ -43,9 +33,7 @@ const start: RequestHandler<any> = async (
 
     if (!organization || !organization.users.find(e => e.userId.toString() === userId)) { throw new Forbidden(); };
 
-    const parts = await robot.parts.filter(e => body?.partsId?.includes(e._id.toString()) ?? true);
-
-    const response = await axios.post(`http://${robot.hostname}:8000/robot/start`, parts.length === 0 ? {} : { processesId: parts.map(e => e._id) });
+    const response = await axios.post(`http://${robot.hostname}:8000/robot/stop`);
     if (response.status !== 200) throw new Error(response.data);
 
     return res.json({
@@ -57,6 +45,6 @@ const start: RequestHandler<any> = async (
 };
 
 export default withAuth(requestMiddleware(
-  start,
-  { validation: { params: startSchemaParams, body: startSchemaBody } }
+  stopRobot,
+  { validation: { params: stopSchemaParams } }
 ), { roles: [UserRole.Verified] });

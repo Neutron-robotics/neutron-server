@@ -306,7 +306,24 @@ describe('robot tests', () => {
       .auth(token, { type: 'bearer' });
 
     expect(res.statusCode).toBe(200);
-    expect(mockAxios).toHaveBeenCalledWith('undefined/robot/start', {});
+    expect(mockAxios).toHaveBeenCalledWith('http://undefined:8000/robot/start', {});
+  });
+
+  it('should stop a robot', async () => {
+    const { robot } = await makeRobot(token, []);
+
+    const mockAxios = jest.fn();
+    (axios.post as any).mockImplementation(mockAxios);
+    mockAxios.mockReturnValue(Promise.resolve({
+      status: 200
+    }));
+
+    const res = await request(app)
+      .post(`/robot/stop/${robot.id}`)
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockAxios).toHaveBeenCalledWith('http://undefined:8000/robot/stop');
   });
 
   it('should start a robot with parts', async () => {
@@ -339,7 +356,7 @@ describe('robot tests', () => {
       });
 
     expect(res.statusCode).toBe(200);
-    expect(mockAxios).toHaveBeenCalledWith('undefined/robot/start', {
+    expect(mockAxios).toHaveBeenCalledWith('http://undefined:8000/robot/start', {
       processesId: [robot.parts[0]._id, robot.parts[1]._id]
     });
   });
