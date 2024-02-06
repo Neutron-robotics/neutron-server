@@ -219,4 +219,197 @@ describe('Connection tests', () => {
     expect(closedConnection?.closedAt).toBeDefined();
     expect(process.kill).toHaveBeenCalledWith(+(closedConnection?.pid ?? ''), 'SIGINT');
   });
+
+  it('get connection by id', async () => {
+    const { robot } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+
+    const connection = new Connection({
+      robotId: robot._id,
+      isActive: true,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 12345,
+      port: 8080
+    });
+    await connection.save();
+
+    const res = await request(app)
+      .get(`/connection/${connection.id}`)
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(200);
+    const connectionDTO = res.body.connection;
+    expect(connectionDTO.isActive).toBe(true);
+    expect(connectionDTO.createdAt).toBeDefined();
+    expect(connectionDTO.closedAt).not.toBeDefined();
+    expect(connectionDTO.createdBy).toBe(user.id);
+    expect(connectionDTO.pid).not.toBeDefined();
+    expect(connectionDTO.port).toBe(8080);
+
+    expect(connectionDTO.robot.secretKey).not.toBeDefined();
+    expect(connectionDTO.robot.name).toBeDefined();
+    expect(connectionDTO.robot.imgUrl).toBeDefined();
+  });
+
+  it('get all my connections', async () => {
+    const { robot: robot1 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+    const { robot: robot2 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+    const { robot: robot3 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+
+    const connection1robot1 = new Connection({
+      robotId: robot1._id,
+      isActive: true,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 12345,
+      port: 8080
+    });
+    await connection1robot1.save();
+    const connection2robot1 = new Connection({
+      robotId: robot1._id,
+      isActive: false,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 4141,
+      port: 8203
+    });
+    await connection2robot1.save();
+
+    const connection1robot2 = new Connection({
+      robotId: robot2._id,
+      isActive: true,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 36982,
+      port: 15482
+    });
+    await connection1robot2.save();
+
+    const connection1robot3 = new Connection({
+      robotId: robot3._id,
+      isActive: false,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 3682,
+      port: 1582
+    });
+    await connection1robot3.save();
+
+    const res = await request(app)
+      .get('/connection')
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(200);
+
+    const { connections } = res.body;
+    expect(connections.length).toBe(4);
+  });
+
+  it('get all my active connections', async () => {
+    const { robot: robot1 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+    const { robot: robot2 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+    const { robot: robot3 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+
+    const connection1robot1 = new Connection({
+      robotId: robot1._id,
+      isActive: true,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 12345,
+      port: 8080
+    });
+    await connection1robot1.save();
+    const connection2robot1 = new Connection({
+      robotId: robot1._id,
+      isActive: false,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 4141,
+      port: 8203
+    });
+    await connection2robot1.save();
+
+    const connection1robot2 = new Connection({
+      robotId: robot2._id,
+      isActive: true,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 36982,
+      port: 15482
+    });
+    await connection1robot2.save();
+
+    const connection1robot3 = new Connection({
+      robotId: robot3._id,
+      isActive: false,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 3682,
+      port: 1582
+    });
+    await connection1robot3.save();
+
+    const res = await request(app)
+      .get('/connection?status=active')
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(200);
+
+    const { connections } = res.body;
+    expect(connections.length).toBe(2);
+  });
+
+  it('get all my inactive connections', async () => {
+    const { robot: robot1 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+    const { robot: robot2 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+    const { robot: robot3 } = await makeRobot(token, [], undefined, RobotStatus.Operating);
+
+    const connection1robot1 = new Connection({
+      robotId: robot1._id,
+      isActive: true,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 12345,
+      port: 8080
+    });
+    await connection1robot1.save();
+    const connection2robot1 = new Connection({
+      robotId: robot1._id,
+      isActive: false,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 4141,
+      port: 8203
+    });
+    await connection2robot1.save();
+
+    const connection1robot2 = new Connection({
+      robotId: robot2._id,
+      isActive: true,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 36982,
+      port: 15482
+    });
+    await connection1robot2.save();
+
+    const connection1robot3 = new Connection({
+      robotId: robot3._id,
+      isActive: false,
+      createdBy: user._id,
+      createdAt: new Date(),
+      pid: 3682,
+      port: 1582
+    });
+    await connection1robot3.save();
+
+    const res = await request(app)
+      .get('/connection?status=active')
+      .auth(token, { type: 'bearer' });
+
+    expect(res.statusCode).toBe(200);
+
+    const { connections } = res.body;
+    expect(connections.length).toBe(2);
+  });
 });

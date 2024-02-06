@@ -42,7 +42,7 @@ const getById: RequestHandler<any> = async (
     if (!organization || !organization.users.find(e => e.userId.toString() === userId)) { throw new Forbidden(); };
 
     const latestStatus = query.includeStatus ? await robot.getLatestStatus() : undefined;
-    const sanitizedRobot = robot?.linked ? { ...robot.toJSON(), secretKey: undefined, status: latestStatus } : robot.toJSON();
+    const sanitizedRobot = robot?.linked ? robot.toDTOModel(latestStatus) : robot.toJSON();
 
     return res.json({
       message: 'OK',

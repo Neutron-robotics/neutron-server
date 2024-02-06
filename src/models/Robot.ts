@@ -25,9 +25,22 @@ export interface IRobot extends Document {
     context: ConnectionContextType
 }
 
-interface IRobotDocument extends IRobot {
+export interface IRobotDTO {
+  _id: string
+  name: string
+  parts: IRobotPart[]
+  linked: boolean
+  imgUrl: string
+  description: string
+  hostname: string
+  context: ConnectionContextType
+  status?: IRobotStatus
+}
+
+export interface IRobotDocument extends IRobot {
   generateHash(): string
   getLatestStatus(): Promise<IRobotStatus | undefined>
+  toDTOModel(status?: IRobotStatus): IRobotDTO
 }
 
 const RobotSchema = new Schema<IRobotDocument>({
@@ -73,6 +86,24 @@ RobotSchema.method<IRobot>(
       }
     }
     return latestStatus;
+  }
+);
+
+RobotSchema.method<IRobot>(
+  'toDTOModel',
+  function (status?: IRobotStatus) {
+    const robotDto: IRobotDTO = {
+      _id: this.id,
+      name: this.name,
+      parts: this.parts,
+      linked: this.linked,
+      imgUrl: this.imgUrl,
+      description: this.description,
+      hostname: this.hostname,
+      context: this.context,
+      status
+    };
+    return robotDto;
   }
 );
 

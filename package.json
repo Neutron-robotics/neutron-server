@@ -26,6 +26,7 @@
     "ts-node-server": "ts-node src/server.ts",
     "start": "node dist/src/server.js",
     "test": "jest",
+    "test:verbose": "jest --verbose --runInBand --silent",
     "fix-lint": "./node_modules/eslint/bin/eslint.js  src --ext .ts --fix"
   },
   "dependencies": {

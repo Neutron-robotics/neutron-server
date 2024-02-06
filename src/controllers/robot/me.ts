@@ -7,7 +7,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { Forbidden, NotFound } from '../../errors/bad-request';
 import Organization from '../../models/Organization';
 import Robot from '../../models/Robot';
-import RobotStatusModel, { RobotStatus } from '../../models/RobotStatus';
+import RobotStatusModel, { IRobotStatus, RobotStatus } from '../../models/RobotStatus';
 
 const getMyRobotsQueryParams = Joi.object().keys({
   includeStatus: Joi.string().optional()
@@ -38,17 +38,11 @@ const me: RequestHandler<any> = async (
 
     const robotsDto = await Promise.all(robots.map(async e => {
       if (e.linked) {
+        let latestStatus: IRobotStatus | undefined;
         if (query.includeStatus === 'true') {
-          const latestStatus = await e.getLatestStatus();
-          // remove additional properties of the robot (e)
-          const { secretKey, ...robotDto } = e.toJSON();
-          return {
-            ...robotDto,
-            status: latestStatus
-          };
+          latestStatus = await e.getLatestStatus();
         }
-        const { secretKey, ...robotDto } = e;
-        return robotDto;
+        return e.toDTOModel(latestStatus);
       }
       return e;
     }));

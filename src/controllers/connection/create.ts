@@ -56,7 +56,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
 
     const connectionPort = randomIntFromInterval(10000, 19000);
 
-    const execParams = `${binPath} --id ${connectionId} --robot-host ${robot.hostname} --robot-port ${robotStatus.context.port} --application-port ${connectionPort} --redis-connection-string redis://localhost:6379`;
+    const execParams = `${binPath} --id ${connectionId} --robot-host ${robot.hostname} --robot-port ${robotStatus.context.port} --application-port ${connectionPort} --application-timeout ${process.env.CONNECTION_MAX_IDLE_TIME}`;
     const neutronProcess = spawn(execParams, { shell: true });
 
     if (!neutronProcess.pid) { throw new ApplicationError('No PID for neutron process'); };
