@@ -72,6 +72,6 @@ ConnectionSchema.method<IConnection>('toDTOModel', function (robot?: IRobotDocum
   return connectionDTO;
 });
 
-const ConnectionGraph = model('Connection', ConnectionSchema);
+const Connection = model('Connection', ConnectionSchema);
 
-export default ConnectionGraph;
+export default Connection;

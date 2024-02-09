@@ -22,15 +22,28 @@ export interface IUser extends Document {
   roles: string[];
 }
 
-interface IUserModel extends Model<IUser> {
+export interface IUserDTO {
+  id: string
+  email: string;
+  firstName: string;
+  lastName: string;
+  imgUrl: string
+}
+
+interface IUserDocument extends IUser {
+  toDTOModel(): IUserDTO
+  passwordMatches(password: string): boolean
+}
+
+interface IUserModel extends Model<IUserDocument> {
   findAndGenerateToken(payload: {
     email: string;
     password: string;
-  }): Promise<IUser>;
+  }): Promise<IUserDocument>;
   checkDuplicateEmailError(err: any): any;
 }
 
-const userSchema = new Schema<IUser>(
+const userSchema = new Schema<IUserDocument>(
   {
     email: {
       type: String,
@@ -129,6 +142,20 @@ userSchema.method<IUser>(
   }
 );
 
+userSchema.method<IUser>(
+  'toDTOModel',
+  function () {
+    const userDTO: IUserDTO = {
+      id: this.id,
+      email: this.email,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      imgUrl: this.imgUrl
+    };
+    return userDTO;
+  }
+);
+
 userSchema.statics.findAndGenerateToken = async function (payload: {
   email: string;
   password: string;
@@ -156,6 +183,6 @@ userSchema.statics.checkDuplicateEmailError = function (err: any) {
   return err;
 };
 
-const User = model<IUser, IUserModel>('User', userSchema);
+const User = model<IUserDocument, IUserModel>('User', userSchema);
 
 export default User;

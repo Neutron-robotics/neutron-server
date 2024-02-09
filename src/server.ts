@@ -3,6 +3,7 @@ import util from 'util';
 import app from './app';
 import SafeMongooseConnection from './lib/safe-mongoose-connection';
 import logger from './logger';
+import runStartUpActions from './startup';
 
 const result = dotenv.config();
 if (result.error) {
@@ -48,8 +49,9 @@ if (process.env.MONGO_URL == null) {
   logger.error('MONGO_URL not specified in environment', new Error('MONGO_URL not specified in environment'));
   process.exit(1);
 } else {
-  safeMongooseConnection.connect(mongoUrl => {
+  safeMongooseConnection.connect(async mongoUrl => {
     logger.info(`Connected to MongoDB at ${mongoUrl}`);
+    await runStartUpActions();
     serve();
   });
 }
