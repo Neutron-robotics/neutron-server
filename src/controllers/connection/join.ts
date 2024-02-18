@@ -38,16 +38,15 @@ const join: RequestHandler<any> = async (req: Request<JoinConnectionParams, {}, 
       throw new Unauthorized();
     }
 
-    const registerId = randomUUID();
-
-    await connectionApi.register(process.env.HOSTNAME, connection.port, registerId);
+    await connectionApi.register(process.env.HOSTNAME, connection.port, userId);
 
     res.send({
       message: 'OK',
       connection: {
         hostname: process.env.HOSTNAME,
         port: connection.port,
-        registerId
+        registerId: userId,
+        connectionId: connection.id
       }
     });
   } catch (error: any) {

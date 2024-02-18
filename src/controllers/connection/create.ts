@@ -4,6 +4,7 @@ import path from 'path';
 import mongoose from 'mongoose';
 import { spawn } from 'child_process';
 import { randomUUID } from 'crypto';
+import axios from 'axios';
 import { withAuth } from '../../middleware/withAuth';
 import requestMiddleware from '../../middleware/request-middleware';
 import { UserRole } from '../../models/User';
@@ -89,6 +90,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
       connection.isActive = false;
       connection.closedAt = new Date();
       await connection.save();
+      await axios.post(`http://${robot.hostname}:8000/robot/stop`);
     });
 
     neutronProcess.once('exit', () => {
@@ -108,8 +110,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
 
     await newConnection.save();
 
-    const registerId = randomUUID();
-    await connectionApi.register(hostname, connectionPort, registerId);
+    await connectionApi.register(hostname, connectionPort, userId);
 
     res.send({
       message: 'OK',
@@ -117,7 +118,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
         connectionId: newConnection._id,
         hostname,
         port: connectionPort,
-        registerId
+        registerId: userId
       }
     });
   } catch (error: any) {

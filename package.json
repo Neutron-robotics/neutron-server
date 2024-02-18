@@ -1,19 +1,14 @@
 {
-  "name": "express-typescript-boilerplate",
+  "name": "neutron-server",
   "version": "1.0.0",
-  "description": "A minimalist TypeScript-Express boilerplate",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sidhantpanda/express-typescript-boilerplate.git"
-  },
+  "description": "The server component powering the neutron platform",
   "keywords": [
     "TypeScript",
     "express",
     "nodejs",
-    "boilerplate",
     "eslint"
   ],
-  "author": "Sidhant Panda",
+  "author": "Hugo PERIER",
   "main": "dist/index.js",
   "scripts": {
     "eslint": "eslint src/server.ts",
@@ -75,9 +70,5 @@
     "ts-node": "10.9.1",
     "typescript": "5.0.4"
   },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/sidhantpanda/docker-express-typescript-boilerplate/issues"
-  },
-  "homepage": "https://github.com/sidhantpanda/docker-express-typescript-boilerplate#readme"
+  "license": "MIT"
 }
