@@ -1,50 +1,49 @@
 name: Build, Test and Publish
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  release:
+    types: [created]
 
 env:
   REGISTRY: registry.hugosoft.dev/
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # build:
-  #   runs-on: ubuntu-latest
-  #   name: Build using Node v18
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18
-  #         registry-url: 'https://npm.pkg.github.com'
-  #     - run: npm install
-  #       env:
-  #         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     - run: npm run build
+  build:
+    runs-on: ubuntu-latest
+    name: Build using Node v18
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: 'https://npm.pkg.github.com'
+      - run: npm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run build
   
-  # test:
-  #   runs-on: ubuntu-latest
-  #   name: Test using Node v18
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18
-  #         registry-url: 'https://npm.pkg.github.com'
-  #     - run: mkdir data
-  #     - run: bash scripts/test.sh
-  #     - run: npm install
-  #       env:
-  #         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     - run: npm run test
-  #       env:
-  #         CI: true
+  test:
+    runs-on: ubuntu-latest
+    name: Test using Node v18
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: 'https://npm.pkg.github.com'
+      - run: mkdir data
+      - run: bash scripts/test.sh
+      - run: npm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run test
+        env:
+          CI: true
     
   publish:
-    # needs: [build, test]
+    needs: [build, test]
     runs-on: ubuntu-latest
-    name: Publish image to Github Packages
+    name: Publish image to Hugosoft cloud
     steps:
       - name: Checkout
         uses: actions/checkout@v3
