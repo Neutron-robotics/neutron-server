@@ -1,0 +1,68 @@
+name: Build, Test and Publish
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: registry.hugosoft.dev/
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # build:
+  #   runs-on: ubuntu-latest
+  #   name: Build using Node v18
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: 'https://npm.pkg.github.com'
+  #     - run: npm install
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - run: npm run build
+  
+  # test:
+  #   runs-on: ubuntu-latest
+  #   name: Test using Node v18
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: 'https://npm.pkg.github.com'
+  #     - run: mkdir data
+  #     - run: bash scripts/test.sh
+  #     - run: npm install
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - run: npm run test
+  #       env:
+  #         CI: true
+    
+  publish:
+    # needs: [build, test]
+    runs-on: ubuntu-latest
+    name: Publish image to Github Packages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@3f6690a76cbcbe44da6bac853d66df365ab3af27
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@817ed59f97d2974e2c1d92f170242f52fd3feae4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
