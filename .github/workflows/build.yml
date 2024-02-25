@@ -15,11 +15,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          registry-url: 'https://npm.pkg.github.com'
           cache: npm
       - run: npm install
       - run: npm run build
         env:
           CI: true
+          NODE_AUTH_TOKEN: ${{ github.token }}
 
   test:
     runs-on: ubuntu-latest
