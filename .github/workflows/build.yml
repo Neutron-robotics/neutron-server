@@ -4,24 +4,18 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: ["18"]
-    name: Build using Node v${{ matrix.node-version }}
+    name: Build using Node v18
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18
           registry-url: 'https://npm.pkg.github.com'
-          cache: npm
       - run: npm install
-      - run: npm run build
         env:
-          CI: true
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run build
 
   test:
     runs-on: ubuntu-latest
