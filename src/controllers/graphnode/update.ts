@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import mongoose from 'mongoose';
-import { NeutronGraphType } from 'neutron-core';
+import { NeutronGraphType } from '@hugoperier/neutron-core';
 import NeutronGraph, { INeutronEdge, INeutronNode } from '../../models/NeutronGraph';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';

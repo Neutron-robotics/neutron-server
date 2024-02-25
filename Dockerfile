@@ -1,20 +1,31 @@
+ARG GITHUB_TOKEN
 FROM node:18.16.0-alpine as base
+ARG GITHUB_TOKEN
+
+ENV GITHUB_TOKEN $GITHUB_TOKEN
+
+# Use the github token for accessing private package repository
+RUN echo //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN >> ~/.npmrc
+RUN echo @[hugoperier]:registry=https://npm.pkg.github.com/ >> ~/.npmrc
 
 # Add package file
 COPY package.json ./
-COPY yarn.lock ./
+COPY package-lock.json ./
 COPY scripts/dev.sh ./scripts/dev.sh
 
 # Install deps
-RUN yarn install
+RUN npm install
+
+# Remove the private token from the npmrc
+RUN echo > ~/.npmrc
 
 # Copy source
 COPY src ./src
 COPY tsconfig.json ./tsconfig.json
-COPY openapi.yml ./openapi.yml
+COPY dependencies ./dependencies
 
 # Build dist
-RUN yarn build
+RUN npm run build
 
 # Start production image build
 FROM node:18.16.0-alpine
@@ -22,10 +33,8 @@ FROM node:18.16.0-alpine
 # Copy node modules and build directory
 COPY --from=base ./node_modules ./node_modules
 COPY --from=base /dist /dist
-
-# Copy static files
-COPY src/public dist/src/public
+COPY --from=base ./dependencies ./dependencies
 
 # Expose port 3000
 EXPOSE 3000
-CMD ["dist/src/server.js"]
+CMD ["dist/server.js"]

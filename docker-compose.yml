@@ -4,23 +4,41 @@ services:
   api-server:
     build:
       context: .
-    container_name: api-server
-    image: api-server
+    container_name: neutron-server
+    image: neutron-server-1
     restart: unless-stopped
     environment:
       - NODE_ENV=production
       - PORT=3000
       - MONGO_URL=mongodb://host.docker.internal:27017/neutron
+      - APP_SECRET=6A0ye3fWHR
+      - FILE_STORAGE=/app/uploads
+      - HOSTNAME=localhost
+      - BASE_URI=localhost:3003
+      - NEUTRON_BIN_PATH=./data/runtime_dependencies/neutron-connection
+      - CONNECTION_MAX_IDLE_TIME=300
     volumes:
       - ./logs:/logs
       - app-volume:/app/uploads
-
     networks:
       - app-network
     ports:
-      - "3000:3000"
+      - "8999:3000"
+
+  mongo:
+    image: mongo
+    container_name: neutron-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+    ports:
+      - "27017:27017"
+
 volumes:
   app-volume:
+  mongo-data:
 
 networks:
   app-network:
