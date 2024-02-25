@@ -1,10 +1,5 @@
 name: Build & Test
-on:
-  push:
-    branches-ignore:
-      - master
-      - staging
-  workflow_dispatch:
+on: [push]
 
 jobs:
   build:
@@ -20,9 +15,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: yarn
-      - run: yarn
-      - run: yarn build
+          cache: npm
+      - run: npm install
+      - run: npm run build
         env:
           CI: true
 
@@ -42,7 +37,7 @@ jobs:
           cache: yarn
       - run: mkdir data
       - run: bash scripts/test.sh
-      - run: yarn
-      - run: yarn test
+      - run: npm install
+      - run: npm run test
         env:
           CI: true
