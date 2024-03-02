@@ -30,7 +30,7 @@ const deleteRobotPart: RequestHandler<any> = async (req: Request<DeletePartSchem
     const robot = await Robot.findOne({ _id: params.robotId });
     if (!robot) { throw new BadRequest('The robot could not be found'); };
 
-    robot.parts = robot.parts.filter(e => e._id.toString() === params.partId);
+    robot.parts = robot.parts.filter(e => e._id.toString() !== params.partId);
     await robot.save();
     res.send({
       message: 'OK'

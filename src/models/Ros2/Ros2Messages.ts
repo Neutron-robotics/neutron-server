@@ -9,11 +9,13 @@ export interface ROS2ServiceMessageStructure {
   name: string
   request: Ros2Field[];
   response: Ros2Field[];
+  isStandard: boolean
 }
 
 export interface ROS2MessageStructure {
   name: string
   fields: Ros2Field[]
+  isStandard: boolean
 }
 
 export interface ROS2ActionMessageStructure {
@@ -21,6 +23,7 @@ export interface ROS2ActionMessageStructure {
   goal: Ros2Field[]
   feedback: Ros2Field[]
   result: Ros2Field[]
+  isStandard: boolean
 }
 
 // Service model definition
@@ -43,6 +46,11 @@ const ROS2ServiceMessageSchema = new Schema<ROS2ServiceMessageStructure>({
   name: {
     type: String,
     required: true
+  },
+  isStandard: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 });
 
@@ -64,6 +72,11 @@ const ROS2MessageSchema = new Schema<ROS2MessageStructure>({
   name: {
     type: String,
     required: true
+  },
+  isStandard: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 });
 
@@ -99,6 +112,11 @@ const ROS2ActionMessageSchema = new Schema<ROS2ActionMessageStructure>({
   name: {
     type: String,
     required: true
+  },
+  isStandard: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 });
 

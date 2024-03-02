@@ -8,7 +8,6 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization, { OrganizationPermissions } from '../../models/Organization';
 import { BadRequest, Forbidden } from '../../errors/bad-request';
-import RobotPart from '../../models/RobotPart';
 import { UserRole } from '../../models/User';
 import Robot from '../../models/Robot';
 

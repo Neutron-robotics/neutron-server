@@ -43,7 +43,8 @@ const create: RequestHandler<any> = async (req: Request<CreatePartSchema, {}, Cr
     robot.parts.push(robotPart);
     await robot.save();
     res.send({
-      message: 'OK'
+      message: 'OK',
+      id: robotPart.id
     });
   } catch (error: any) {
     next(error);

@@ -59,7 +59,8 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateRobotBody>, res
     organization.robots.push(robot._id);
     await organization.save();
     res.send({
-      message: 'OK'
+      message: 'OK',
+      id: robot.id
     });
   } catch (error: any) {
     next(error);
