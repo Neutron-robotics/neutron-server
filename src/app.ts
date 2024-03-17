@@ -15,12 +15,19 @@ function logResponseTime(req: Request, res: Response, next: NextFunction) {
   res.on('finish', () => {
     const elapsedHrTime = process.hrtime(startHrTime);
     const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6;
-    const message = `${req.method} ${res.statusCode} ${elapsedTimeInMs}ms\t${req.path}`;
-    logger.log({
-      level: 'debug',
-      message,
-      consoleLoggerOptions: { label: 'API' }
-    });
+    const userId = (req as any).user?.sub ?? 'anonymous';
+
+    logger.info(
+      '',
+      {
+        method: req.method,
+        userId,
+        statusCode: res.statusCode,
+        duration: elapsedTimeInMs,
+        path: req.path,
+        label: 'API'
+      }
+    );
   });
 
   next();

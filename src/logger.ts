@@ -3,7 +3,15 @@ import {
   format,
   transports
 } from 'winston';
+import dotenv from 'dotenv';
 import ConsoleLoggerTransport from './lib/winston-console-transport';
+
+const LogstashTransport = require('winston-logstash/lib/winston-logstash-latest');
+
+const result = dotenv.config();
+if (result.error) {
+  dotenv.config({ path: '.env.default' });
+}
 
 const logTransports = [
   new transports.File({
@@ -24,12 +32,19 @@ const logTransports = [
   new ConsoleLoggerTransport()
 ];
 
+if (process.env.LOGSTASH_IS_ENABLED) {
+  logTransports.push(new LogstashTransport({
+    port: +(process.env.LOGSTASH_PORT as string),
+    node_name: process.env.LOGSTASH_NODE_NAME as string,
+    host: process.env.LOGSTASH_HOSTNAME as string
+  }));
+}
+
 const logger = createLogger({
   format: format.combine(
-    format.timestamp()
+    format.timestamp(),
   ),
   transports: logTransports,
-  defaultMeta: { service: 'api' },
   level: process.env.NODE_ENV === 'development' ? 'silly' : 'info'
 });
 

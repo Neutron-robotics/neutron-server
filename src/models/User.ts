@@ -96,7 +96,6 @@ const userSchema = new Schema<IUserDocument>(
 );
 
 userSchema.pre('save', async function save(next) {
-  logger.info('pre', this.isModified('password'), this.isNew);
   if (this.isModified('password') || this.isNew) {
     try {
       const salt = await genSalt(10);
@@ -104,7 +103,9 @@ userSchema.pre('save', async function save(next) {
       this.password = h;
       next();
     } catch (err: any) {
-      logger.error(`Error: ${err}`);
+      logger.error(`Failed to pre save password ${err}`, {
+        userId: this.id
+      });
       next(err);
     }
   } else {
@@ -169,7 +170,12 @@ userSchema.statics.findAndGenerateToken = async function (payload: {
 
   const passwordOK = await user.passwordMatches(password);
 
-  if (!passwordOK) throw new Unauthorized('Password mismatch');
+  if (!passwordOK) {
+    logger.info('User login with incorrect password', {
+      userId: user.id
+    });
+    throw new Unauthorized('Password mismatch');
+  }
 
   if (!user.active) throw new Unauthorized('User not activated');
 

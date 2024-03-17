@@ -15,10 +15,19 @@ const levelStyleMap: { [key: string]: string } = {
   silly: '\x1b[36m%s\x1b[0m'
 };
 
+const formatLog = (label: string, info: any) => {
+  const date = new Date().toISOString();
+
+  console.log(label, info);
+
+  if (label === 'API') return `[${date}] [${label}] - ${info.method} user:${info.userId} - ${info.statusCode} - ${info.duration}ms ${info.path} ${info.message}`;
+  return `[${date}] [${label}] ${info.message}`;
+};
+
 export default class ConsoleLogTransport extends Transport {
   log(info: any, callback: { (): void }) {
-    const label = info.consoleLoggerOptions?.label! || (info.level as string).toUpperCase();
-    const finalMessage = `[${new Date().toISOString()}] [${label}] ${info.message}`;
+    const label = info?.label || (info.level as string).toUpperCase();
+    const finalMessage = formatLog(label, info);
     console.log(levelStyleMap[info.level], finalMessage);
     info.stack && console.log('\t', info.stack);
     callback();

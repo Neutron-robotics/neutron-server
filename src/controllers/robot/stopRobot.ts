@@ -1,12 +1,12 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import axios from 'axios';
 import { withAuth } from '../../middleware/withAuth';
 import { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { Forbidden, NotFound } from '../../errors/bad-request';
 import Organization from '../../models/Organization';
 import Robot from '../../models/Robot';
+import * as agentApi from '../../api/connection';
 
 interface StopRobotParams {
     robotId: string
@@ -33,8 +33,7 @@ const stopRobot: RequestHandler<any> = async (
 
     if (!organization || !organization.users.find(e => e.userId.toString() === userId)) { throw new Forbidden(); };
 
-    const response = await axios.post(`http://${robot.hostname}:8000/robot/stop`);
-    if (response.status !== 200) throw new Error(response.data);
+    await agentApi.stopRobot(robot.hostname, 8000); // todo handle port
 
     return res.json({
       message: 'OK'

@@ -86,7 +86,7 @@ const standardActionTypes: StandardActionType[] = [
 
 const verifyStandardMessageOrInstall = async (installedMessages: ROS2MessageStructure[], stdMessage: StandardMessageType) => {
   if (installedMessages.find(e => e.name === stdMessage.name)) return;
-  logger.info(`[ros2StandardType] Installing ${stdMessage.name}`);
+  logger.info(`Installing ros2 msg standard type ${stdMessage.name}`);
   await ROS2MessageModel.create({
     ...stdMessage,
     isStandard: true
@@ -95,7 +95,7 @@ const verifyStandardMessageOrInstall = async (installedMessages: ROS2MessageStru
 
 const verifyStandardServiceOrInstall = async (installedMessages: ROS2ServiceMessageStructure[], stdMessage: StandardServiceType) => {
   if (installedMessages.find(e => e.name === stdMessage.name)) return;
-  logger.info(`[ros2StandardType] Installing ${stdMessage.name}`);
+  logger.info(`Installing ros2 srv standard type ${stdMessage.name}`);
   await ROS2ServiceMessageModel.create({
     ...stdMessage,
     isStandard: true
@@ -104,7 +104,7 @@ const verifyStandardServiceOrInstall = async (installedMessages: ROS2ServiceMess
 
 const verifyStandardActionOrInstall = async (installedMessages: ROS2ActionMessageStructure[], stdMessage: StandardActionType) => {
   if (installedMessages.find(e => e.name === stdMessage.name)) return;
-  logger.info(`[ros2StandardType] Installing ${stdMessage.name}`);
+  logger.info(`Installing ros2 action standard type ${stdMessage.name}`);
   await ROS2ActionMessageModel.create({
     ...stdMessage,
     isStandard: true

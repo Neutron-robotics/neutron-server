@@ -3,8 +3,6 @@ import { Request, RequestHandler } from 'express';
 import path from 'path';
 import mongoose from 'mongoose';
 import { spawn } from 'child_process';
-import { randomUUID } from 'crypto';
-import axios from 'axios';
 import { withAuth } from '../../middleware/withAuth';
 import requestMiddleware from '../../middleware/request-middleware';
 import { UserRole } from '../../models/User';
@@ -14,8 +12,9 @@ import Organization, { OrganizationPermissions } from '../../models/Organization
 import { BadRequest, Unauthorized } from '../../errors/bad-request';
 import { randomIntFromInterval } from '../../utils/random';
 import Connection from '../../models/Connection';
-import * as connectionApi from '../../api/connection';
 import { RobotStatus } from '../../models/RobotStatus';
+import * as agentApi from '../../api/connection';
+import logger from '../../logger';
 
 export const createSchema = Joi.object().keys({
   robotId: Joi.string().required()
@@ -67,34 +66,66 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     const waitForReadyLine = new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         neutronProcess.kill();
+        logger.error('Connection has timeout before it started', {
+          connectionId,
+          userId,
+          path: req.path
+        });
         reject(new ApplicationError('Timeout waiting the connection server to start'));
       }, timeout);
 
       neutronProcess.stdout.on('data', (data: Buffer) => {
         const output = data.toString();
         if (output.includes(readyLine)) {
+          logger.info('Connection has started successfuly', {
+            connectionId,
+            userId,
+            path: req.path
+          });
           clearTimeout(timer);
           resolve();
         }
       });
 
       neutronProcess.once('error', err => {
+        logger.error(`Connection error: ${err.message}`, {
+          connectionId,
+          userId,
+          path: req.path
+        });
         neutronProcess.kill();
         reject(err);
       });
     });
 
     neutronProcess.once('close', async () => {
-      const connection = await Connection.findById(connectionId);
-      if (!connection) { return; };
-      connection.isActive = false;
-      connection.closedAt = new Date();
-      await connection.save();
-      await axios.post(`http://${robot.hostname}:8000/robot/stop`);
+      try {
+        const connection = await Connection.findById(connectionId);
+        if (!connection) { return; };
+        connection.isActive = false;
+        connection.closedAt = new Date();
+        await connection.save();
+        await agentApi.stopRobot(robot.hostname, 8000); // todo handle port
+        logger.info('Connection has stopped successfuly', {
+          connectionId,
+          userId,
+          path: req.path
+        });
+      } catch (err: any) {
+        logger.error(`Error when attempting to close connection ${err.message}`, {
+          connectionId,
+          userId,
+          path: req.path
+        });
+      }
     });
 
     neutronProcess.once('exit', () => {
-      console.log('coucou');
+      logger.warn('Connection has exited, is this the desired behavior ?', {
+        connectionId,
+        userId,
+        path: req.path
+      });
     });
 
     await waitForReadyLine;
@@ -110,7 +141,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
 
     await newConnection.save();
 
-    await connectionApi.register(hostname, connectionPort, userId);
+    await agentApi.register(hostname, connectionPort, userId);
 
     res.send({
       message: 'OK',
