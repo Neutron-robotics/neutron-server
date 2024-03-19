@@ -6,6 +6,7 @@ import cors from 'cors';
 import ApplicationError from './errors/application-error';
 import routes from './routes';
 import logger from './logger';
+import sendEmail from './utils/nodemailer/sendEmail';
 
 const app = express();
 

@@ -4,6 +4,7 @@ import {
 } from 'mongoose';
 import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
 import logger from '../logger';
+import sendEmail from '../utils/nodemailer/sendEmail';
 
 export enum UserRole {
   User = 'user',
@@ -115,21 +116,16 @@ userSchema.pre('save', async function save(next) {
 
 userSchema.post('save', async (doc, next) => {
   try {
-    // const mailOptions = {
-    //   from: 'noreply',
-    //   to: this.email,
-    //   subject: 'Confirm creating account',
-    //   html: `<div><h1>Hello new user!</h1><p>Click <a href="${config.hostname}/api/auth/confirm?key=${this.activationKey}">link</a> to activate your new account.</p></div><div><h1>Hello developer!</h1><p>Feel free to change this template ;).</p></div>`
-    // };
-
-    // transporter.sendMail(mailOptions, (error, info) => {
-    //   if (error) {
-    //     console.log(error);
-    //   } else {
-    //     console.log(`Email sent: ${info.response}`);
-    //   }
-    // });
-
+    if (doc.isNew && !doc.active && process.env.EMAIL_ENABLED) {
+      sendEmail({
+        to: 'hugo.perier@protonmail.com',
+        subject: 'Verify your email',
+        template: 'verify',
+        templateArgs: {
+          '{{NEUTRON_VERIFY_LINK}}': 'https://google.com'
+        }
+      });
+    }
     return next();
   } catch (error: any) {
     return next(error);

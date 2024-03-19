@@ -18,8 +18,6 @@ const levelStyleMap: { [key: string]: string } = {
 const formatLog = (label: string, info: any) => {
   const date = new Date().toISOString();
 
-  console.log(label, info);
-
   if (label === 'API') return `[${date}] [${label}] - ${info.method} user:${info.userId} - ${info.statusCode} - ${info.duration}ms ${info.path} ${info.message}`;
   return `[${date}] [${label}] ${info.message}`;
 };
