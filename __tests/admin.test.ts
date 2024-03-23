@@ -4,6 +4,10 @@ import mongoose from 'mongoose';
 import app from '../src/app';
 import User from '../src/models/User';
 import { makeAdminUser, makeUser, withLogin } from './__utils__/user_setup';
+import { generateRandomString } from './__utils__/string';
+import sendEmail from '../src/utils/nodemailer/sendEmail';
+
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 
 describe('Admin controller', () => {
   let adminUser: any = {};
@@ -78,6 +82,54 @@ describe('Admin controller', () => {
 
     expect(rres.statusCode).toBe(200);
     expect(usr?.active).toBe(false);
+  });
+
+  it('update a user', async () => {
+    const { user } = await makeUser(false);
+    const newFirstName = 'NewFirstName';
+    const newLastName = 'NewLastName';
+    const newEmail = `test-${generateRandomString(8)}@new.com`.toLocaleLowerCase();
+    const newActive = true;
+    const newRoles = ['user'];
+
+    const res = await request(app)
+      .post(`/admin/user/${user.id}/update`)
+      .auth(adminToken, { type: 'bearer' })
+      .send({
+        firstName: newFirstName,
+        lastName: newLastName,
+        email: newEmail,
+        active: newActive,
+        roles: newRoles
+      });
+
+    expect(res.statusCode).toBe(200);
+
+    const updatedUser = await User.findById(user.id);
+    expect(updatedUser?.firstName).toBe(newFirstName);
+    expect(updatedUser?.lastName).toBe(newLastName);
+    expect(updatedUser?.email).toBe(newEmail);
+    expect(updatedUser?.active).toBe(newActive);
+    expect(updatedUser?.roles).toStrictEqual(newRoles);
+  });
+
+  it('invite a user', async () => {
+    const res = await request(app)
+      .post('/admin/inviteUser')
+      .auth(adminToken, { type: 'bearer' })
+      .send({
+        email: 'invite@test.com'
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(sendEmail).toHaveBeenCalledWith({
+      subject: 'Register to Neutron',
+      template: 'register',
+      templateArgs: {
+        NEUTRON_CREATE_ACCOUNT_LINK: expect.stringContaining('localhost:3003/auth/register/')
+      },
+      to: 'invite@test.com'
+    });
   });
 
   it.todo('get organizations');
