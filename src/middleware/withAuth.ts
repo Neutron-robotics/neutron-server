@@ -2,11 +2,31 @@ import {
   RequestHandler, Request, Response, NextFunction
 } from 'express';
 import { verify } from 'jsonwebtoken';
-import { IUser } from '../models/User';
+import { IUser, UserRole } from '../models/User';
 import { Forbidden, Unauthorized } from '../errors/bad-request';
 
+function isRoleAllowed(role: UserRole, userRole: UserRole): boolean {
+  const permissionLevels: UserRole[] = [
+    UserRole.User,
+    UserRole.Verified,
+    UserRole.Admin
+  ];
+
+  const permissionIndex = permissionLevels.indexOf(role);
+  if (permissionIndex === -1) {
+    return false;
+  }
+
+  const roleIndex = permissionLevels.indexOf(userRole);
+  if (roleIndex === -1) {
+    return false;
+  }
+
+  return roleIndex >= permissionIndex;
+}
+
 interface AuthOptions {
-    roles?: string[]
+    role?: UserRole
   }
 
 export const withAuth = (
@@ -29,9 +49,9 @@ export const withAuth = (
       return;
     }
 
-    if (options?.roles
-        && !options.roles.every(role => (user as unknown as IUser).roles.includes(role))) {
+    if (options?.role && !isRoleAllowed(options.role, user.role)) {
       next(new Forbidden('Missing authorization'));
+      return;
     }
 
     (req as any).user = user;

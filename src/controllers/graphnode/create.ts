@@ -72,5 +72,5 @@ export default withAuth(
     create,
     { validation: { body: createSchema } }
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

@@ -89,5 +89,5 @@ export default withAuth(
     update,
     { validation: { body: updateSchema, params: updateParams } }
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

@@ -2,7 +2,7 @@ import request from 'supertest';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import app from '../src/app';
-import User from '../src/models/User';
+import User, { UserRole } from '../src/models/User';
 import { makeAdminUser, makeUser, withLogin } from './__utils__/user_setup';
 import { generateRandomString } from './__utils__/string';
 import sendEmail from '../src/utils/nodemailer/sendEmail';
@@ -40,8 +40,8 @@ describe('Admin controller', () => {
 
   it('fails to get all users if not admin', async () => {
     const user = await User.findOne({ email: adminUser.email }).exec();
-    if (user?.roles) {
-      user.roles = [];
+    if (user?.role) {
+      user.role = UserRole.User;
       await user.save();
     }
 
@@ -90,7 +90,7 @@ describe('Admin controller', () => {
     const newLastName = 'NewLastName';
     const newEmail = `test-${generateRandomString(8)}@new.com`.toLocaleLowerCase();
     const newActive = true;
-    const newRoles = ['user'];
+    const newRole = UserRole.Verified;
 
     const res = await request(app)
       .post(`/admin/user/${user.id}/update`)
@@ -100,7 +100,7 @@ describe('Admin controller', () => {
         lastName: newLastName,
         email: newEmail,
         active: newActive,
-        roles: newRoles
+        role: newRole
       });
 
     expect(res.statusCode).toBe(200);
@@ -110,7 +110,7 @@ describe('Admin controller', () => {
     expect(updatedUser?.lastName).toBe(newLastName);
     expect(updatedUser?.email).toBe(newEmail);
     expect(updatedUser?.active).toBe(newActive);
-    expect(updatedUser?.roles).toStrictEqual(newRoles);
+    expect(updatedUser?.role).toStrictEqual(newRole);
   });
 
   it('invite a user', async () => {
@@ -126,7 +126,7 @@ describe('Admin controller', () => {
       subject: 'Register to Neutron',
       template: 'register',
       templateArgs: {
-        NEUTRON_CREATE_ACCOUNT_LINK: expect.stringContaining('localhost:3003/auth/register/')
+        '{{NEUTRON_CREATE_ACCOUNT_LINK}}': expect.stringContaining('http://localhost:5173/register/')
       },
       to: 'invite@test.com'
     });

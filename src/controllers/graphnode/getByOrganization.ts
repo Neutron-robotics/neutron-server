@@ -44,5 +44,5 @@ export default withAuth(
     getByOrganization,
     { validation: { params: getByOrganizationSchema } }
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

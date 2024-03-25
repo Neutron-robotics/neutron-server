@@ -10,7 +10,7 @@ const updateSchemaBody = Joi.object().keys({
   lastName: Joi.string().optional(),
   email: Joi.string().optional(),
   active: Joi.boolean().optional(),
-  roles: Joi.array().optional()
+  role: Joi.string().optional()
 });
 
 const updateSchemaParams = Joi.object().keys({
@@ -22,7 +22,7 @@ interface UpdateBody {
   lastName: string | undefined
   email: string | undefined
   active: boolean | undefined
-  roles: string[] | undefined
+  role: string | undefined
 }
 
 interface UpdateParams {
@@ -44,7 +44,7 @@ const update: RequestHandler<any> = async (
     if (body.lastName) { user.lastName = body.lastName; }
     if (body.email) { user.email = body.email; }
     if (body.active !== undefined) { user.active = body.active; }
-    if (body.roles) { user.roles = body.roles; }
+    if (body.role) { user.role = body.role; }
     await user.save();
 
     return res.json({
@@ -58,4 +58,4 @@ const update: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   update,
   { validation: { body: updateSchemaBody, params: updateSchemaParams } }
-), { roles: [UserRole.Admin] });
+), { role: UserRole.Admin });

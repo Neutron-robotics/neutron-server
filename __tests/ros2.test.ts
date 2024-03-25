@@ -16,6 +16,8 @@ import ROS2SubscriberModel from '../src/models/Ros2/Ros2Subscriber';
 import ROS2ActionModel from '../src/models/Ros2/Ros2Action';
 import ROS2ServiceModel from '../src/models/Ros2/Ros2Service';
 
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
+
 describe('ros2 protocol related tests', () => {
   let user: any = {};
   let token: string = '';

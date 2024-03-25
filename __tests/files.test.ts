@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import app from '../src/app';
 
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
+
 describe('File service', () => {
   const result = dotenv.config();
   if (result.error) {

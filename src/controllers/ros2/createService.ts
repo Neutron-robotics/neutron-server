@@ -73,4 +73,4 @@ const createService: RequestHandler<any> = async (req: Request<CreateServicePara
 export default withAuth(requestMiddleware(
   createService,
   { validation: { params: createServiceSchemaParams, body: createServiceSchemaBody } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

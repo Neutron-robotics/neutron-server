@@ -76,4 +76,4 @@ const createPublisher: RequestHandler<any> = async (req: Request<CreatePublisher
 export default withAuth(requestMiddleware(
   createPublisher,
   { validation: { params: createPublisherSchemaParams, body: createPublisherSchemaBody } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

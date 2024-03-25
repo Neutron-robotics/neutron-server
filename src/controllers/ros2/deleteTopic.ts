@@ -54,4 +54,4 @@ const deleteTopic: RequestHandler<any> = async (req: Request<DeleteTopicParams, 
 export default withAuth(requestMiddleware(
   deleteTopic,
   { validation: { params: deleteTopicSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

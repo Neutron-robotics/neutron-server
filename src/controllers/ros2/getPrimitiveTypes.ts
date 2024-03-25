@@ -29,4 +29,4 @@ const getPrimitiveTypes: RequestHandler<any> = async (
 
 export default withAuth(requestMiddleware(
   getPrimitiveTypes
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

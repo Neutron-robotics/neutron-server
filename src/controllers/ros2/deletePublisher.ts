@@ -54,4 +54,4 @@ const deletePublisher: RequestHandler<any> = async (req: Request<DeletePublisher
 export default withAuth(requestMiddleware(
   deletePublisher,
   { validation: { params: deletePublisherSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

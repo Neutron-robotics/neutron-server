@@ -50,4 +50,4 @@ const getOrganizationRobots: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   getOrganizationRobots,
   { validation: { params: getRobotsSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

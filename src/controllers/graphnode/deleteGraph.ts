@@ -42,5 +42,5 @@ export default withAuth(
     deleteGraph,
     { validation: { params: deleteSchema } }
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

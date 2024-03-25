@@ -42,4 +42,4 @@ const deleteRobot: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   deleteRobot,
   { validation: { params: deleteSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

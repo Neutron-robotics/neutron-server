@@ -9,6 +9,8 @@ import app from '../src/app';
 import { PublishSystemInformationRequest } from '../src/controllers/agent/publishSystemInformation';
 import RobotStatusModel, { RobotStatus } from '../src/models/RobotStatus';
 
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
+
 describe('agent test', () => {
   let user: any = {};
   let token: string = '';

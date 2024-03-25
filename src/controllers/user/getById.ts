@@ -35,5 +35,5 @@ export default withAuth(
     getUserById,
     { validation: { params: getUserSchemaParams } }
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

@@ -127,5 +127,5 @@ export default withAuth(
       body: updateSchemaBody
     }
   }),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

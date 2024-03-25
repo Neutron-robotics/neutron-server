@@ -12,6 +12,7 @@ import { RobotStatus } from '../src/models/RobotStatus';
 
 jest.mock('axios');
 jest.mock('child_process');
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 describe('Connection tests', () => {
   let user: any = {};
   let token: string = '';

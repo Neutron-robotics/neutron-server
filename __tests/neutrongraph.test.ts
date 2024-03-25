@@ -12,6 +12,8 @@ import NeutronGraph from '../src/models/NeutronGraph';
 import Organization, { IOrganization } from '../src/models/Organization';
 import Robot, { IRobot } from '../src/models/Robot';
 
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
+
 describe('Neutron graph controller', () => {
   let user: any = {};
   let token: string = '';

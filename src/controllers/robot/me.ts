@@ -62,5 +62,5 @@ export default withAuth(
       query: getMyRobotsQueryParams
     }
   }),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

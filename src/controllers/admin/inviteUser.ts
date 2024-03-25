@@ -1,11 +1,9 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
 import moment from 'moment';
-import path from 'path';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
-import User, { UserRole } from '../../models/User';
-import { NotFound } from '../../errors/bad-request';
+import { UserRole } from '../../models/User';
 import Token, { TokenCategory } from '../../models/Token';
 import sendEmail from '../../utils/nodemailer/sendEmail';
 import ApplicationError from '../../errors/application-error';
@@ -55,4 +53,4 @@ const inviteUser: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   inviteUser,
   { validation: { body: inviteUserSchemaBody } }
-), { roles: [UserRole.Admin] });
+), { role: UserRole.Admin });

@@ -105,4 +105,4 @@ const createMessageType: RequestHandler<any> = async (req: Request<CreateMessage
 export default withAuth(requestMiddleware(
   createMessageType,
   { validation: { params: createMessageTypeSchemaParams, body: createMessageTypeSchemaBody } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

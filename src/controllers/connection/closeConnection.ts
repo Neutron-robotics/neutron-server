@@ -52,4 +52,4 @@ const closeConnection: RequestHandler<any> = async (req: Request<CloseConnection
   }
 };
 
-export default withAuth(requestMiddleware(closeConnection, { validation: { params: closeSchema } }), { roles: [UserRole.Verified] });
+export default withAuth(requestMiddleware(closeConnection, { validation: { params: closeSchema } }), { role: UserRole.Verified });

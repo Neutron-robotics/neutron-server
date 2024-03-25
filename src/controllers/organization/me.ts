@@ -28,4 +28,4 @@ const me: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
   }
 };
 
-export default withAuth(requestMiddleware(me), { roles: [UserRole.Verified] });
+export default withAuth(requestMiddleware(me), { role: UserRole.Verified });

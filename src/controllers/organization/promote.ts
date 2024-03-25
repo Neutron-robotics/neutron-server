@@ -81,4 +81,4 @@ const promote: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   promote,
   { validation: { body: promoteSchemaBody, params: promoteSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

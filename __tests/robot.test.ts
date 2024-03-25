@@ -17,6 +17,7 @@ import { RobotStatus } from '../src/models/RobotStatus';
 import { sleep } from '../src/utils/time';
 
 jest.mock('axios');
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 
 describe('robot tests', () => {
   let user: any = {};
@@ -323,7 +324,7 @@ describe('robot tests', () => {
       .auth(token, { type: 'bearer' });
 
     expect(res.statusCode).toBe(200);
-    expect(mockAxios).toHaveBeenCalledWith('http://undefined:8000/robot/stop');
+    expect(mockAxios).toHaveBeenCalledWith('http://undefined:8000/robot/stop', {});
   });
 
   it('should start a robot with parts', async () => {

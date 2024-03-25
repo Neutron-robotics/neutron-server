@@ -1,8 +1,8 @@
 import { RequestHandler, Request } from 'express';
 import Joi from 'joi';
-import User from '../../models/User';
+import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
-import { Unauthorized } from '../../errors/bad-request';
+import { BadRequest, Unauthorized } from '../../errors/bad-request';
 
 export const verifyQuery = Joi.object().keys({
   key: Joi.string().required().min(4)
@@ -14,13 +14,16 @@ interface VerifyQuery {
 
 const verify: RequestHandler = async (req: Request<{}, {}, VerifyQuery>, res, next) => {
   try {
-    const result = await User.findOneAndUpdate(
-      { activationKey: req.query.key },
-      { $set: { activationKey: undefined }, $push: { roles: 'verified' } }
-    ).exec();
-    if (!result) {
-      next(new Unauthorized());
+    const user = await User.findOne({ activationKey: req.query.key });
+
+    if (!user) {
+      throw new Unauthorized();
     }
+
+    user.role = UserRole.Verified;
+    user.activationKey = undefined;
+    await user.save();
+
     return res.json({ message: 'OK' });
   } catch (error) {
     next(error);

@@ -10,6 +10,8 @@ import { generateRandomString } from './__utils__/string';
 import { makeRobot } from './__utils__/robot_setup';
 import { RobotPartCategory } from '../src/models/RobotPart';
 
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
+
 describe('organization tests', () => {
   let user: any = {};
   let token: string = '';

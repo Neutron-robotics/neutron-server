@@ -74,4 +74,4 @@ const update: RequestHandler<any> = async (req: Request<UpdatePartSchema, {}, Up
 export default withAuth(requestMiddleware(
   update,
   { validation: { params: updateSchemaParams, body: updatePartsSchema } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

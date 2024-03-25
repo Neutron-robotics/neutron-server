@@ -40,4 +40,4 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
   }
 };
 
-export default withAuth(requestMiddleware(create, { validation: { body: createSchema } }), { roles: [UserRole.Verified] });
+export default withAuth(requestMiddleware(create, { validation: { body: createSchema } }), { role: UserRole.Verified });

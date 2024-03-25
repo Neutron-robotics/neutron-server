@@ -62,4 +62,4 @@ const getStatus: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   getStatus,
   { validation: { params: getStatusRobotSchemaParam } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

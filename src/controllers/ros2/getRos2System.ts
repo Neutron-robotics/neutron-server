@@ -51,4 +51,4 @@ const getRos2System: RequestHandler<any> = async (req: Request<GetRos2SystemPara
 export default withAuth(requestMiddleware(
   getRos2System,
   { validation: { params: getRos2SystemSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

@@ -5,6 +5,10 @@ import app from '../src/app';
 import User from '../src/models/User';
 import { generateRandomString } from './__utils__/string';
 import { deleteUser, makeUser, withLogin } from './__utils__/user_setup';
+import Token, { TokenCategory } from '../src/models/Token';
+import sendEmail from '../src/utils/nodemailer/sendEmail';
+
+jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 
 describe('Authentication controller', () => {
   let randomUserProps: any = {};
@@ -31,6 +35,8 @@ describe('Authentication controller', () => {
 
   it('Create an account', async () => {
     const email = `hugo.test@test-${generateRandomString(5)}.com`;
+    const token = await Token.create({ category: TokenCategory.AccountCreation });
+
     const resp = await request(app)
       .post('/auth/register')
       .send(
@@ -38,7 +44,8 @@ describe('Authentication controller', () => {
           firstName: randomUserProps.firstName,
           lastName: randomUserProps.lastName,
           password: randomUserProps.password,
-          email
+          email,
+          registrationKey: token.key
         }
       );
 
@@ -52,6 +59,14 @@ describe('Authentication controller', () => {
     expect(user?.active).toBe(true);
     expect(user?.password?.length).toBeGreaterThan(5);
     expect(user?.password?.length).not.toBe(randomUserProps.password);
+    expect(sendEmail).toHaveBeenCalledWith({
+      subject: 'Verify your email',
+      template: 'verify',
+      templateArgs: {
+        '{{NEUTRON_VERIFY_LINK}}': `http://localhost:5173/verify/${user?.activationKey}`
+      },
+      to: user?.email
+    });
 
     // cleanup
     await deleteUser(email);
@@ -70,7 +85,7 @@ describe('Authentication controller', () => {
     }).exec();
 
     expect(user2.length).toBe(1);
-    expect(user2[0].roles.includes('verified')).toBe(true);
+    expect(user2[0].role).toBe('verified');
 
     // cleanup
     await deleteUser(user.email);
@@ -141,7 +156,7 @@ describe('Authentication controller', () => {
     expect(res.statusCode).toBe(200);
     expect(me.firstName).toBe(user?.firstName);
     expect(me.lastName).toBe(user?.lastName);
-    expect(me.roles).toStrictEqual(['user', 'verified']);
+    expect(me.role).toBe('verified');
     expect(me.email).toBe(user?.email);
     await deleteUser(user.email);
   });
@@ -181,7 +196,7 @@ describe('Authentication controller', () => {
     const { me } = res.body;
     expect(me.firstName).toBe(user?.firstName);
     expect(me.lastName).toBe(user?.lastName);
-    expect(me.roles).toStrictEqual(['user', 'verified']);
+    expect(me.role).toBe('verified');
     expect(me.email).toBe(user?.email);
 
     // cleanup
@@ -201,7 +216,7 @@ describe('Authentication controller', () => {
     }).exec();
 
     expect(usr.length).toBe(1);
-    expect(usr[0].roles.includes('verified')).toBe(false);
+    expect(usr[0].role).not.toBe('verified');
 
     // cleanup
     await deleteUser(user.email);

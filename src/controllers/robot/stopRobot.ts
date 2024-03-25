@@ -46,4 +46,4 @@ const stopRobot: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   stopRobot,
   { validation: { params: stopSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

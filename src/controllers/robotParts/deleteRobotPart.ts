@@ -43,4 +43,4 @@ const deleteRobotPart: RequestHandler<any> = async (req: Request<DeletePartSchem
 export default withAuth(requestMiddleware(
   deleteRobotPart,
   { validation: { params: deletePartSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

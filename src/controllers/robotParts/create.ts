@@ -54,4 +54,4 @@ const create: RequestHandler<any> = async (req: Request<CreatePartSchema, {}, Cr
 export default withAuth(requestMiddleware(
   create,
   { validation: { params: createSchemaParams, body: partsSchema } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

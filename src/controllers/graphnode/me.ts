@@ -28,5 +28,5 @@ export default withAuth(
   requestMiddleware(
     getByOrganization,
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

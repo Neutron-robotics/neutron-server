@@ -33,4 +33,4 @@ const deleteOrganization: RequestHandler<any> = async (req: Request<DeleteQuery>
   }
 };
 
-export default withAuth(requestMiddleware(deleteOrganization, { validation: { params: deleteSchemaQuery } }), { roles: [UserRole.Verified] });
+export default withAuth(requestMiddleware(deleteOrganization, { validation: { params: deleteSchemaQuery } }), { role: UserRole.Verified });

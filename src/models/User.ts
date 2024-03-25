@@ -4,7 +4,6 @@ import {
 } from 'mongoose';
 import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
 import logger from '../logger';
-import sendEmail from '../utils/nodemailer/sendEmail';
 
 export enum UserRole {
   User = 'user',
@@ -18,9 +17,9 @@ export interface IUser extends Document {
   firstName: string;
   lastName: string;
   imgUrl: string
-  activationKey: string;
+  activationKey: string | undefined;
   active: boolean;
-  roles: string[];
+  role: string;
 }
 
 export interface IUserDTO {
@@ -85,9 +84,9 @@ const userSchema = new Schema<IUserDocument>(
       type: Boolean,
       default: false
     },
-    roles: {
-      type: [String],
-      default: [UserRole.User],
+    role: {
+      type: String,
+      default: UserRole.User,
       enum: UserRole
     }
   },
@@ -111,24 +110,6 @@ userSchema.pre('save', async function save(next) {
     }
   } else {
     return next();
-  }
-});
-
-userSchema.post('save', async (doc, next) => {
-  try {
-    if (doc.isNew && !doc.active && process.env.EMAIL_ENABLED) {
-      sendEmail({
-        to: 'hugo.perier@protonmail.com',
-        subject: 'Verify your email',
-        template: 'verify',
-        templateArgs: {
-          '{{NEUTRON_VERIFY_LINK}}': 'https://google.com'
-        }
-      });
-    }
-    return next();
-  } catch (error: any) {
-    return next(error);
   }
 });
 

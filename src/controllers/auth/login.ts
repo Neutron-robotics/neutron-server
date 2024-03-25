@@ -18,7 +18,7 @@ const login: RequestHandler = async (req: Request<{}, {}, LoginBody>, res, next)
   const { body } = req;
   try {
     const user = await User.findAndGenerateToken(body);
-    const payload = { sub: user._id, roles: user.roles };
+    const payload = { sub: user._id, role: user.role };
     const token = sign(payload, process.env.APP_SECRET ?? '', { expiresIn: '1d' });
     res.cookie('jwt', token, {
       httpOnly: true, secure: true, maxAge: 24 * 60 * 60 * 1000

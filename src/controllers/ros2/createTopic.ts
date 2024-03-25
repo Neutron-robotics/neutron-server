@@ -72,4 +72,4 @@ const createTopic: RequestHandler<any> = async (req: Request<CreateTopicParams, 
 export default withAuth(requestMiddleware(
   createTopic,
   { validation: { params: createTopicSchemaParams, body: createTopicSchemaBody } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

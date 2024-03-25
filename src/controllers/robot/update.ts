@@ -69,4 +69,4 @@ const update: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   update,
   { validation: { body: updateRobotSchemaBody, params: updateRobotSchemaParam } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

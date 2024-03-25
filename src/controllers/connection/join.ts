@@ -54,4 +54,4 @@ const join: RequestHandler<any> = async (req: Request<JoinConnectionParams, {}, 
   }
 };
 
-export default withAuth(requestMiddleware(join, { validation: { params: joinSchema } }), { roles: [UserRole.Verified] });
+export default withAuth(requestMiddleware(join, { validation: { params: joinSchema } }), { role: UserRole.Verified });

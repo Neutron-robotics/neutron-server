@@ -23,4 +23,4 @@ const users: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
   }
 };
 
-export default withAuth(requestMiddleware(users), { roles: [UserRole.Admin] });
+export default withAuth(requestMiddleware(users), { role: UserRole.Admin });

@@ -54,4 +54,4 @@ const demote: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   demote,
   { validation: { body: demoteSchemaBody, params: demoteSchemaQuery } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });
