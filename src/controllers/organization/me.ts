@@ -14,7 +14,7 @@ const me: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
     }
 
     const organizations = (await Organization
-      .find({ users: { $elemMatch: { userId, permissions: 'owner' } }, active: true })
+      .find({ users: { $elemMatch: { userId } }, active: true })
       .lean()
       .exec())
       .map(({ active, ...rest }) => rest);

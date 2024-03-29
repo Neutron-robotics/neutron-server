@@ -3,8 +3,8 @@ import { Request, RequestHandler } from 'express';
 import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
-import Organization from '../../models/Organization';
-import { Forbidden, NotFound } from '../../errors/bad-request';
+import Organization, { OrganizationPermissions } from '../../models/Organization';
+import { BadRequest, Forbidden, NotFound } from '../../errors/bad-request';
 
 const promoteSchemaBody = Joi.object().keys({
   role: Joi.string().required(),
@@ -20,7 +20,7 @@ interface PromoteParams {
 }
 
 interface PromoteBody {
-    role: string
+    role: OrganizationPermissions
     user: string
 }
 
@@ -36,20 +36,24 @@ const promote: RequestHandler<any> = async (
     const organization = await Organization.findOne({ name: params.organization }).exec();
     if (!organization) { throw new NotFound(); };
 
+    // verify if the client is an administrator of the platform
+    const user = await User.findById(userId);
+    const isUserAdmin = user?.role === UserRole.Admin;
+
     const userRelationAuthor = organization.users.find(e => e.userId.toString() === userId);
 
-    if (!userRelationAuthor) { throw new Forbidden(); };
+    if (!userRelationAuthor && !isUserAdmin) { throw new Forbidden(); };
     // Only owner can transfer the ownership
-    if (!userRelationAuthor.permissions.includes('owner') && body.role === 'owner') { throw new Forbidden(); };
+    if (!userRelationAuthor?.permissions.includes(OrganizationPermissions.Owner) && body.role === OrganizationPermissions.Owner && !isUserAdmin) { throw new Forbidden(); };
     // only these users can promote
-    if (!userRelationAuthor.permissions.includes('owner') && !userRelationAuthor.permissions.includes('admin')) { throw new Forbidden(); };
+    if (!userRelationAuthor?.permissions.includes(OrganizationPermissions.Owner) && !userRelationAuthor?.permissions.includes(OrganizationPermissions.Admin) && !isUserAdmin) { throw new Forbidden(); };
 
     // find the user on which the operation will apply
     const userToBeGranted = await User.findOne({ email: body.user.toLowerCase() }).exec();
     if (!userToBeGranted) throw new NotFound(`Cannot find user associated with the email ${body.user}`);
 
     const userToBeGrantedRelation = organization.users
-      .find(e => e.userId === userToBeGranted._id);
+      .find(e => e.userId.toString() === userToBeGranted._id.toString());
 
     if (!userToBeGrantedRelation) {
       // If the user does not belong to the organization yet, we add itF
@@ -64,9 +68,16 @@ const promote: RequestHandler<any> = async (
 
     // In case of transfer of ownership we remove the role for the previous owner
     // and we replace it by the admin role
-    if (body.role === 'owner') {
-      userRelationAuthor.permissions = userRelationAuthor.permissions.filter(e => e !== 'owner');
-      userRelationAuthor.permissions.push('admin');
+    if (body.role === OrganizationPermissions.Owner) {
+      if (!userRelationAuthor) {
+        const organizationOwner = organization.users.find(e => e.permissions.includes(OrganizationPermissions.Owner));
+        if (organizationOwner) {
+          organizationOwner.permissions = organizationOwner.permissions.filter(e => e !== OrganizationPermissions.Owner);
+        }
+      } else {
+        userRelationAuthor.permissions = userRelationAuthor.permissions.filter(e => e !== OrganizationPermissions.Owner);
+        userRelationAuthor.permissions.push(OrganizationPermissions.Admin);
+      }
     };
 
     await organization.save();

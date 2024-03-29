@@ -34,8 +34,11 @@ const demote: RequestHandler<any> = async (
     const organization = await Organization.findOne({ name: params.organization }).exec();
     if (!organization) { throw new NotFound(); };
 
-    // verify if the user is owner of the organization
-    if (!organization.isUserAdmin(userId)) { throw new Forbidden(); };
+    const user = await User.findById(userId);
+    const isUserAdmin = user?.role === UserRole.Admin;
+
+    // verify if the user is owner of the organization or an administrator of the platform
+    if (!organization.isUserAdmin(userId) && !isUserAdmin) { throw new Forbidden(); };
 
     // find the user on which the operation will apply
     const userToBeDemoted = await User.findOne({ email: body.user }).exec();

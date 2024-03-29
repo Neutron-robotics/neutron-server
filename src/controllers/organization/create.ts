@@ -9,7 +9,7 @@ const createSchema = Joi.object().keys({
   name: Joi.string().required(),
   company: Joi.string().required(),
   description: Joi.string().required(),
-  imgUrl: Joi.string().required()
+  imgUrl: Joi.string().optional()
 });
 
 interface CreateBody {
