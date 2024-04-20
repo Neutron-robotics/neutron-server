@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /* eslint-disable no-console */
 /* eslint-disable no-unused-expressions */
 import Transport from 'winston-transport';

@@ -14,7 +14,7 @@ import { randomIntFromInterval } from '../../utils/random';
 import Connection from '../../models/Connection';
 import { RobotStatus } from '../../models/RobotStatus';
 import * as agentApi from '../../api/connection';
-import logger from '../../logger';
+import logger, { connectionLogger } from '../../logger';
 
 export const createSchema = Joi.object().keys({
   robotId: Joi.string().required()
@@ -62,6 +62,17 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     if (!neutronProcess.pid) { throw new ApplicationError('No PID for neutron process'); };
     const timeout = 4000; // 4 seconds
     const readyLine = `neutron connection ${connectionId} ready`;
+
+    neutronProcess.stdout.on('data', (data: Buffer) => {
+      const output = data.toString();
+      const msgs = output.split('\n');
+      msgs.forEach(msg => {
+        if (!msg.length) return;
+        connectionLogger.info(msg, {
+          organizationId: 'hugosoft'
+        });
+      });
+    });
 
     const waitForReadyLine = new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
