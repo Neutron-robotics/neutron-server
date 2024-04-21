@@ -10,6 +10,7 @@ import useRos2Controller from './controllers/ros2';
 import useNeutronGraph from './controllers/graphnode';
 import useConnection from './controllers/connection';
 import useAgentController from './controllers/agent';
+import useWebsiteController from './controllers/website';
 
 const router = Router();
 
@@ -26,5 +27,6 @@ useRos2Controller(router);
 useNeutronGraph(router);
 useConnection(router);
 useAgentController(router);
+useWebsiteController(router);
 
 export default router;

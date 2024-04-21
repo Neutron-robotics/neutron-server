@@ -25,7 +25,7 @@ describe('Admin controller', () => {
   });
 
   afterEach(async () => {
-    User.deleteOne({ email: adminUser.email });
+    await User.deleteOne({ email: adminUser.email });
     await mongoose.connection.close();
   });
 
