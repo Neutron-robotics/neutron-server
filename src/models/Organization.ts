@@ -29,6 +29,7 @@ export interface IOrganization extends Document {
 interface IOrganizationDocument extends IOrganization {
   isUserAdmin(userId: string): boolean
   isUserAllowed(userId: string, permissions: OrganizationPermissions[]): boolean
+  toElasticIndexName(): string
 }
 
 interface IOrganizationModel extends Model<IOrganizationDocument> {
@@ -114,6 +115,13 @@ OrganizationSchema.method<IOrganization>(
     const isUserAllowed = permission.some(e => userPermissions.has(e));
 
     return isUserAllowed;
+  }
+);
+
+OrganizationSchema.method<IOrganization>(
+  'toElasticIndexName',
+  function () {
+    return `organization-${this.name.replace(' ', '')}`.toLowerCase();
   }
 );
 

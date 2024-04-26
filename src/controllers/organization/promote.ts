@@ -5,6 +5,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization, { OrganizationPermissions } from '../../models/Organization';
 import { BadRequest, Forbidden, NotFound } from '../../errors/bad-request';
+import { addRolesToUser, removeRolesFromUser } from '../../utils/elasticsearch';
 
 const promoteSchemaBody = Joi.object().keys({
   role: Joi.string().required(),
@@ -79,6 +80,15 @@ const promote: RequestHandler<any> = async (
         userRelationAuthor.permissions.push(OrganizationPermissions.Admin);
       }
     };
+
+    // Manage Elasticsearch permissions for the promoted user
+    if ([OrganizationPermissions.Admin,
+      OrganizationPermissions.Analyst,
+      OrganizationPermissions.Owner].some(e => userToBeGrantedRelation?.permissions.includes(e))) {
+      addRolesToUser(userToBeGranted.toElasticUsername(), [`organization-${organization.name}`]);
+    } else {
+      removeRolesFromUser(userToBeGranted.toElasticUsername(), [`organization-${organization.name}`]);
+    }
 
     await organization.save();
     return res.json({

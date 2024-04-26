@@ -1,20 +1,20 @@
 import request from 'supertest';
 import { generateRandomString } from './string';
 import app from '../../src/app';
-import User, { UserRole } from '../../src/models/User';
+import User, { IUserDTO, UserRole } from '../../src/models/User';
 import Token, { TokenCategory } from '../../src/models/Token';
 
-const makeUser = async (verify: boolean) => {
+const makeUser = async (verify: boolean, customUser?: Partial<IUserDTO>) => {
   const randomUser = {
-    firstName: 'hugo',
-    lastName: 'user',
+    firstName: customUser?.firstName ?? 'hugo',
+    lastName: customUser?.lastName ?? 'user',
     password: 'toto1234',
-    email: `hugo.user@test-${generateRandomString(5)}.com`
+    email: customUser?.email ?? `hugo.user@test-${generateRandomString(5)}.com`
   };
 
   const token = await Token.create({ category: TokenCategory.AccountCreation });
 
-  await request(app)
+  const regRes = await request(app)
     .post('/auth/register')
     .send(
       {
@@ -29,7 +29,7 @@ const makeUser = async (verify: boolean) => {
     email: randomUser.email.toLowerCase()
   }).exec();
   if (verify) {
-    await request(app)
+    const r = await request(app)
       .post(`/auth/verify?key=${user?.activationKey}`);
   }
   if (!user) { throw new Error('The test user failed to be created'); };

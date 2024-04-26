@@ -3,6 +3,7 @@ import Joi from 'joi';
 import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { BadRequest, Unauthorized } from '../../errors/bad-request';
+import { createElasticUser } from '../../utils/elasticsearch';
 
 export const verifyQuery = Joi.object().keys({
   key: Joi.string().required().min(4)
@@ -23,6 +24,13 @@ const verify: RequestHandler = async (req: Request<{}, {}, VerifyQuery>, res, ne
     user.role = UserRole.Verified;
     user.activationKey = undefined;
     await user.save();
+
+    await createElasticUser({
+      username: user.toElasticUsername(),
+      password_hash: user.password,
+      email: user.email,
+      roles: []
+    });
 
     return res.json({ message: 'OK' });
   } catch (error) {
