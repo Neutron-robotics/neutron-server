@@ -31,6 +31,9 @@ const deleteRobot: RequestHandler<any> = async (
     }
 
     await Robot.deleteOne({ _id: params.robotId }).exec();
+    organization.robots = organization.robots.filter(e => e !== params.robotId);
+    await organization.save();
+
     return res.json({
       message: 'OK'
     });
