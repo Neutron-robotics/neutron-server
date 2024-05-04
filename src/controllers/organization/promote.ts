@@ -5,6 +5,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization, { OrganizationPermissions } from '../../models/Organization';
 import { BadRequest, Forbidden, NotFound } from '../../errors/bad-request';
+import { addRolesToUser, removeRolesFromUser } from '../../utils/elasticsearch';
 
 const promoteSchemaBody = Joi.object().keys({
   role: Joi.string().required(),
@@ -52,7 +53,7 @@ const promote: RequestHandler<any> = async (
     const userToBeGranted = await User.findOne({ email: body.user.toLowerCase() }).exec();
     if (!userToBeGranted) throw new NotFound(`Cannot find user associated with the email ${body.user}`);
 
-    const userToBeGrantedRelation = organization.users
+    let userToBeGrantedRelation = organization.users
       .find(e => e.userId.toString() === userToBeGranted._id.toString());
 
     if (!userToBeGrantedRelation) {
@@ -61,6 +62,8 @@ const promote: RequestHandler<any> = async (
         userId: userToBeGranted._id,
         permissions: [body.role]
       });
+      userToBeGrantedRelation = organization.users
+        .find(e => e.userId.toString() === userToBeGranted._id.toString());
     } else if (!userToBeGrantedRelation.permissions.includes(body.role)) {
       // otherwise we add the role if he does not already have it
       userToBeGrantedRelation.permissions.push(body.role);
@@ -79,6 +82,15 @@ const promote: RequestHandler<any> = async (
         userRelationAuthor.permissions.push(OrganizationPermissions.Admin);
       }
     };
+
+    // Manage Elasticsearch permissions for the promoted user
+    if ([OrganizationPermissions.Admin,
+      OrganizationPermissions.Analyst,
+      OrganizationPermissions.Owner].some(e => userToBeGrantedRelation?.permissions.includes(e))) {
+      addRolesToUser(userToBeGranted.toElasticUsername(), [organization.toElasticIndexName()]);
+    } else {
+      removeRolesFromUser(userToBeGranted.toElasticUsername(), [organization.toElasticIndexName()]);
+    }
 
     await organization.save();
     return res.json({

@@ -2,6 +2,7 @@ import {
   Document, Model, Schema, model
 } from 'mongoose';
 import { BadRequest } from '../errors/bad-request';
+import { replaceAll } from '../utils/string';
 
 export enum OrganizationPermissions {
   Guest = 'guest',
@@ -29,6 +30,7 @@ export interface IOrganization extends Document {
 interface IOrganizationDocument extends IOrganization {
   isUserAdmin(userId: string): boolean
   isUserAllowed(userId: string, permissions: OrganizationPermissions[]): boolean
+  toElasticIndexName(): string
 }
 
 interface IOrganizationModel extends Model<IOrganizationDocument> {
@@ -114,6 +116,14 @@ OrganizationSchema.method<IOrganization>(
     const isUserAllowed = permission.some(e => userPermissions.has(e));
 
     return isUserAllowed;
+  }
+);
+
+OrganizationSchema.method<IOrganization>(
+  'toElasticIndexName',
+  function () {
+    const organizationNameNormalized = replaceAll(this.name, ' ', '-');
+    return `organization-${organizationNameNormalized}`.toLowerCase();
   }
 );
 

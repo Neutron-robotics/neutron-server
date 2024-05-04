@@ -32,6 +32,7 @@ export interface IUserDTO {
 
 interface IUserDocument extends IUser {
   toDTOModel(): IUserDTO
+  toElasticUsername(): string
   passwordMatches(password: string): boolean
 }
 
@@ -131,6 +132,13 @@ userSchema.method<IUser>(
       imgUrl: this.imgUrl
     };
     return userDTO;
+  }
+);
+
+userSchema.method<IUser>(
+  'toElasticUsername',
+  function () {
+    return `${this.firstName}-${this.lastName}`.replace(' ', '');
   }
 );
 

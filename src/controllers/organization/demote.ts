@@ -4,7 +4,8 @@ import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization from '../../models/Organization';
-import { Forbidden, NotFound } from '../../errors/bad-request';
+import { BadRequest, Forbidden, NotFound } from '../../errors/bad-request';
+import { removeRolesFromUser } from '../../utils/elasticsearch';
 
 const demoteSchemaBody = Joi.object().keys({
   user: Joi.string().required()
@@ -37,6 +38,8 @@ const demote: RequestHandler<any> = async (
     const user = await User.findById(userId);
     const isUserAdmin = user?.role === UserRole.Admin;
 
+    if (!user) throw new BadRequest('User not found');
+
     // verify if the user is owner of the organization or an administrator of the platform
     if (!organization.isUserAdmin(userId) && !isUserAdmin) { throw new Forbidden(); };
 
@@ -45,6 +48,10 @@ const demote: RequestHandler<any> = async (
     if (!userToBeDemoted) throw new NotFound(`Cannot find user associated with the email ${body.user}`);
 
     organization.users = organization.users.filter(e => e.userId.toString() !== userToBeDemoted._id.toString());
+
+    // Manage Elasticsearch permissions for the promoted user
+    await removeRolesFromUser(userToBeDemoted.toElasticUsername(), [organization.toElasticIndexName()]);
+
     await organization.save();
     return res.json({
       message: 'OK'
