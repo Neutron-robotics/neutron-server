@@ -2,6 +2,7 @@ import {
   Document, Model, Schema, model
 } from 'mongoose';
 import { BadRequest } from '../errors/bad-request';
+import { replaceAll } from '../utils/string';
 
 export enum OrganizationPermissions {
   Guest = 'guest',
@@ -121,7 +122,8 @@ OrganizationSchema.method<IOrganization>(
 OrganizationSchema.method<IOrganization>(
   'toElasticIndexName',
   function () {
-    return `organization-${this.name.replace(' ', '')}`.toLowerCase();
+    const organizationNameNormalized = replaceAll(this.name, ' ', '-');
+    return `organization-${organizationNameNormalized}`.toLowerCase();
   }
 );
 

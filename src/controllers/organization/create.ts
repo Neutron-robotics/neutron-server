@@ -35,15 +35,13 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
     });
     await organization.save();
 
-    createOrganizationRole(organization.name).then(async () => {
-      const owner = await User.findById(userId);
-      if (!owner) {
-        logger.error(`Failed creating ES ${organization.name} role, aborting user role definition`);
-        return;
-      }
-
-      addRolesToUser(owner.toElasticUsername(), [organization.toElasticIndexName()]);
-    });
+    await createOrganizationRole(organization.name);
+    const owner = await User.findById(userId);
+    if (!owner) {
+      logger.error(`Failed creating ES ${organization.name} role, aborting user role definition`);
+      return;
+    }
+    await addRolesToUser(owner.toElasticUsername(), [organization.toElasticIndexName()]);
 
     return res.json({
       message: 'OK'

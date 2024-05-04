@@ -1,5 +1,6 @@
 import axios from 'axios';
 import logger from '../logger';
+import { replaceAll } from './string';
 
 const elasticServer = axios.create({
   baseURL: process.env.ELASTIC_HOSTNAME,
@@ -40,10 +41,11 @@ const createElasticUser = async (user: IElasticUserCreate) => {
 };
 
 const createOrganizationRole = async (organizationName: string) => {
-  const roleName = `organization-${organizationName}`;
+  const organizationNameNormalized = replaceAll(organizationName, ' ', '-').toLowerCase();
+  const roleName = `organization-${organizationNameNormalized}`;
   const indices = [
     {
-      names: [`neutron-connection-${organizationName}-*`],
+      names: [`neutron-connection-${organizationNameNormalized}-*`],
       privileges: ['read']
     }
   ];
@@ -70,7 +72,7 @@ const createOrganizationRole = async (organizationName: string) => {
 
 async function addRolesToUser(username: string, roles: string[]) {
   try {
-    await kibanaServer.put(`/api/security/users/${username}/_roles`, {
+    await elasticServer.post(`/_security/user/${username}`, {
       roles
     });
     logger.info('Roles added successfully.');
@@ -82,10 +84,12 @@ async function addRolesToUser(username: string, roles: string[]) {
 // Function to remove roles from a user
 async function removeRolesFromUser(username: string, roles: string[]) {
   try {
-    await kibanaServer.delete(`/api/security/users/${username}/_roles`, {
-      data: {
-        roles
-      }
+    const elasticUser = await elasticServer.get(`/_security/user/${username}`);
+    const elasticUserRolesFiltered = elasticUser.data[username].roles
+      .filter((role: string) => !roles.includes(role));
+
+    await elasticServer.post(`/_security/user/${username}`, {
+      roles: elasticUserRolesFiltered
     });
     logger.info('Roles removed successfully.');
   } catch (error: any) {
