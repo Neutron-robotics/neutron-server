@@ -4,8 +4,8 @@ import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization, { OrganizationPermissions } from '../../models/Organization';
-import { BadRequest, Forbidden, NotFound } from '../../errors/bad-request';
-import { addRolesToUser, removeRolesFromUser } from '../../utils/elasticsearch';
+import { Forbidden, NotFound } from '../../errors/bad-request';
+import { addRolesToUser, removeRolesFromUser } from '../../api/elasticsearch/roles';
 
 const promoteSchemaBody = Joi.object().keys({
   role: Joi.string().required(),
@@ -87,9 +87,9 @@ const promote: RequestHandler<any> = async (
     if ([OrganizationPermissions.Admin,
       OrganizationPermissions.Analyst,
       OrganizationPermissions.Owner].some(e => userToBeGrantedRelation?.permissions.includes(e))) {
-      addRolesToUser(userToBeGranted.toElasticUsername(), [organization.toElasticIndexName()]);
+      addRolesToUser(userToBeGranted.toElasticUsername(), [organization.toElasticRoleName()]);
     } else {
-      removeRolesFromUser(userToBeGranted.toElasticUsername(), [organization.toElasticIndexName()]);
+      removeRolesFromUser(userToBeGranted.toElasticUsername(), [organization.toElasticRoleName()]);
     }
 
     await organization.save();

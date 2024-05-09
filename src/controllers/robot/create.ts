@@ -8,6 +8,9 @@ import { BadRequest } from '../../errors/bad-request';
 import { withAuth } from '../../middleware/withAuth';
 import { UserRole } from '../../models/User';
 import { IRobotPart, RobotPartCategory } from '../../models/RobotPart';
+import { replaceAll } from '../../utils/string';
+import { createDataView } from '../../api/elasticsearch/dataview';
+import { createConnectionDashboard } from '../../api/elasticsearch/connectionDashboard';
 
 export const partsSchema = Joi.object().keys({
   type: Joi.string().required(),
@@ -58,6 +61,17 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateRobotBody>, res
     await robot.save();
     organization.robots.push(robot._id);
     await organization.save();
+
+    const dataviewId = await createDataView(`Robot connection ${robot.name}`, `neutron-connection-${organization.id}-${robot.id}`);
+    if (dataviewId) {
+      await createConnectionDashboard({
+        id: robot.id,
+        title: `${organization.name} Organization - ${robot.name}`,
+        dataViewId: dataviewId,
+        description: `Dashboard for visualization of connection event and status for ${robot.name}`
+      });
+    }
+
     res.send({
       message: 'OK',
       id: robot.id

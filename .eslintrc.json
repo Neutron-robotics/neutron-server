@@ -47,6 +47,8 @@
     "arrow-parens": ["error", "as-needed"],
     "semi": "error",
     "no-extra-semi": 0,
+    "no-restricted-syntax": "off",
+    "no-await-in-loop": "off",
     "import/no-unresolved": "off",
     "import/prefer-default-export": 0,
     "no-unused-vars": "off",

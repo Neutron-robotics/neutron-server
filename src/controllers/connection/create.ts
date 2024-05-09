@@ -69,7 +69,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
       msgs.forEach(msg => {
         if (!msg.length) return;
         connectionLogger.info(msg, {
-          organizationId: 'hugosoft'
+          organizationId: organization.id
         });
       });
     });

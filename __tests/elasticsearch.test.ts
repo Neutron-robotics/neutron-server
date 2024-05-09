@@ -7,6 +7,8 @@ import app from '../src/app';
 import User from '../src/models/User';
 import { makeUser, withLogin } from './__utils__/user_setup';
 import { makeOrganization } from './__utils__/organization_setup';
+import { makeRobot } from './__utils__/robot_setup';
+import Robot from '../src/models/Robot';
 
 describe('Elasticsearch integration tests', () => {
   const result = dotenv.config();
@@ -22,7 +24,8 @@ describe('Elasticsearch integration tests', () => {
     },
     headers: {
       'kbn-xsrf': 'reporting'
-    }
+    },
+    validateStatus: () => true
   });
 
   const elasticServer = axios.create({
@@ -30,7 +33,8 @@ describe('Elasticsearch integration tests', () => {
     auth: {
       username: process.env.NEUTRON_ADMIN_ELK_USERNAME ?? '',
       password: process.env.NEUTRON_ADMIN_ELK_PASSWORD ?? ''
-    }
+    },
+    validateStatus: () => true
   });
 
   beforeEach(async () => {
@@ -84,7 +88,7 @@ describe('Elasticsearch integration tests', () => {
     let res:any = {};
     res = await elasticServer.get(`/_security/user/${ESUsername}`);
 
-    const roleName = org.toElasticIndexName();
+    const roleName = org.toElasticRoleName();
 
     expect(res.status).toBe(200);
     expect(res.data[ESUsername]).toBeDefined();
@@ -137,7 +141,7 @@ describe('Elasticsearch integration tests', () => {
     let res:any = {};
     res = await elasticServer.get(`/_security/user/${ESUsernamePromoted}`);
 
-    const roleName = org.toElasticIndexName();
+    const roleName = org.toElasticRoleName();
 
     expect(promoteRes.status).toBe(200);
     expect(res.status).toBe(200);
@@ -202,4 +206,34 @@ describe('Elasticsearch integration tests', () => {
     expect(res.data[ESUsernamePromoted]).toBeDefined();
     expect(res.data[ESUsernamePromoted].roles).toStrictEqual([]);
   });
+
+  it('Creating a robot creates a dashboard', async () => {
+    const { user, password } = await makeUser(true);
+    const token = await withLogin(user.email, password);
+
+    const { organization, robot } = await makeRobot(token, []);
+
+    const res = await kibanaServer.get(`/api/saved_objects/dashboard/${robot.id}`);
+
+    expect(res.status).toBe(200);
+    expect(res.data.attributes.title).toBe(`${organization?.name} Organization - ${robot.name}`);
+  });
+
+  it('Deleting the robot also delete the dashboard', async () => {
+    const { user, password } = await makeUser(true);
+    const token = await withLogin(user.email, password);
+
+    const { robot } = await makeRobot(token, []);
+
+    const res = await request(app)
+      .delete(`/robot/${robot.id}`)
+      .auth(token, { type: 'bearer' });
+
+    const deletedRobot = await Robot.findOne({ _id: robot.id });
+    const resKibana = await kibanaServer.get(`/api/saved_objects/dashboard/${robot.id}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(deletedRobot).toBeNull();
+    expect(resKibana.status).toBe(404);
+  }, 9000000);
 });

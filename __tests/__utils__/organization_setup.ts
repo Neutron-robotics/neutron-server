@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import request from 'supertest';
 import app from '../../src/app';
-import Organization from '../../src/models/Organization';
+import Organization, { IOrganizationDocument } from '../../src/models/Organization';
 import { generateRandomString } from './string';
 
 const makeOrganization = async (token: string) => {

@@ -13,6 +13,23 @@ import { RobotStatus } from '../src/models/RobotStatus';
 jest.mock('axios');
 jest.mock('child_process');
 jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
+
+jest.mock('../src/api/elasticsearch/dataview', () => ({
+  deleteDataViewByIndexPattern: jest.fn(),
+  createDataView: jest.fn().mockReturnValue(Promise.resolve('toto'))
+}));
+
+jest.mock('../src/api/elasticsearch/connectionDashboard', () => ({
+  deleteDashboard: jest.fn(),
+  createConnectionDashboard: jest.fn()
+}));
+
+jest.mock('../src/api/elasticsearch/roles', () => ({
+  createOrganizationRole: jest.fn(),
+  addRolesToUser: jest.fn(),
+  removeRolesFromUser: jest.fn()
+}));
+
 describe('Connection tests', () => {
   let user: any = {};
   let token: string = '';

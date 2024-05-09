@@ -27,10 +27,10 @@ export interface IOrganization extends Document {
     users: IUserRelation[]
 }
 
-interface IOrganizationDocument extends IOrganization {
+export interface IOrganizationDocument extends IOrganization {
   isUserAdmin(userId: string): boolean
   isUserAllowed(userId: string, permissions: OrganizationPermissions[]): boolean
-  toElasticIndexName(): string
+  toElasticRoleName(): string
 }
 
 interface IOrganizationModel extends Model<IOrganizationDocument> {
@@ -120,7 +120,7 @@ OrganizationSchema.method<IOrganization>(
 );
 
 OrganizationSchema.method<IOrganization>(
-  'toElasticIndexName',
+  'toElasticRoleName',
   function () {
     const organizationNameNormalized = replaceAll(this.name, ' ', '-');
     return `organization-${organizationNameNormalized}`.toLowerCase();

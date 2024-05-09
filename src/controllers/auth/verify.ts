@@ -3,7 +3,7 @@ import Joi from 'joi';
 import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { BadRequest, Unauthorized } from '../../errors/bad-request';
-import { createElasticUser } from '../../utils/elasticsearch';
+import createElasticUser from '../../api/elasticsearch/users';
 
 export const verifyQuery = Joi.object().keys({
   key: Joi.string().required().min(4)

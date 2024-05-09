@@ -5,7 +5,7 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization from '../../models/Organization';
 import { BadRequest, Forbidden, NotFound } from '../../errors/bad-request';
-import { removeRolesFromUser } from '../../utils/elasticsearch';
+import { removeRolesFromUser } from '../../api/elasticsearch/roles';
 
 const demoteSchemaBody = Joi.object().keys({
   user: Joi.string().required()
@@ -50,7 +50,7 @@ const demote: RequestHandler<any> = async (
     organization.users = organization.users.filter(e => e.userId.toString() !== userToBeDemoted._id.toString());
 
     // Manage Elasticsearch permissions for the promoted user
-    await removeRolesFromUser(userToBeDemoted.toElasticUsername(), [organization.toElasticIndexName()]);
+    await removeRolesFromUser(userToBeDemoted.toElasticUsername(), [organization.toElasticRoleName()]);
 
     await organization.save();
     return res.json({

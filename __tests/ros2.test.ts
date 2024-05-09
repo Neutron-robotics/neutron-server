@@ -18,6 +18,22 @@ import ROS2ServiceModel from '../src/models/Ros2/Ros2Service';
 
 jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 
+jest.mock('../src/api/elasticsearch/dataview', () => ({
+  deleteDataViewByIndexPattern: jest.fn(),
+  createDataView: jest.fn().mockReturnValue(Promise.resolve('toto'))
+}));
+
+jest.mock('../src/api/elasticsearch/connectionDashboard', () => ({
+  deleteDashboard: jest.fn(),
+  createConnectionDashboard: jest.fn()
+}));
+
+jest.mock('../src/api/elasticsearch/roles', () => ({
+  createOrganizationRole: jest.fn(),
+  addRolesToUser: jest.fn(),
+  removeRolesFromUser: jest.fn()
+}));
+
 describe('ros2 protocol related tests', () => {
   let user: any = {};
   let token: string = '';

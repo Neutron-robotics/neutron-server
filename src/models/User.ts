@@ -4,6 +4,7 @@ import {
 } from 'mongoose';
 import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
 import logger from '../logger';
+import { replaceAll } from '../utils/string';
 
 export enum UserRole {
   User = 'user',
@@ -138,7 +139,7 @@ userSchema.method<IUser>(
 userSchema.method<IUser>(
   'toElasticUsername',
   function () {
-    return `${this.firstName}-${this.lastName}`.replace(' ', '');
+    return replaceAll(`${this.firstName}-${this.lastName}`, ' ', '');
   }
 );
 

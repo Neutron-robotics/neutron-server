@@ -4,8 +4,8 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization, { OrganizationPermissions } from '../../models/Organization';
 import User, { UserRole } from '../../models/User';
-import { addRolesToUser, createOrganizationRole } from '../../utils/elasticsearch';
 import logger from '../../logger';
+import { addRolesToUser, createOrganizationRole } from '../../api/elasticsearch/roles';
 
 const createSchema = Joi.object().keys({
   name: Joi.string().required(),
@@ -35,13 +35,13 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
     });
     await organization.save();
 
-    await createOrganizationRole(organization.name);
+    await createOrganizationRole(organization);
     const owner = await User.findById(userId);
     if (!owner) {
       logger.error(`Failed creating ES ${organization.name} role, aborting user role definition`);
       return;
     }
-    await addRolesToUser(owner.toElasticUsername(), [organization.toElasticIndexName()]);
+    await addRolesToUser(owner.toElasticUsername(), [organization.toElasticRoleName()]);
 
     return res.json({
       message: 'OK'

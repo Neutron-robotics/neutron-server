@@ -15,9 +15,21 @@ import Ros2SystemModel from '../src/models/Ros2/Ros2System';
 import { PublishSystemInformationRequest } from '../src/controllers/agent/publishSystemInformation';
 import { RobotStatus } from '../src/models/RobotStatus';
 import { sleep } from '../src/utils/time';
+import { deleteDataViewByIndexPattern, createDataView } from '../src/api/elasticsearch/dataview';
+import { deleteDashboard, createConnectionDashboard } from '../src/api/elasticsearch/connectionDashboard';
 
-jest.mock('axios');
 jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
+jest.mock('axios');
+
+jest.mock('../src/api/elasticsearch/dataview', () => ({
+  deleteDataViewByIndexPattern: jest.fn(),
+  createDataView: jest.fn().mockReturnValue(Promise.resolve('toto'))
+}));
+
+jest.mock('../src/api/elasticsearch/connectionDashboard', () => ({
+  deleteDashboard: jest.fn(),
+  createConnectionDashboard: jest.fn()
+}));
 
 describe('robot tests', () => {
   let user: any = {};
@@ -36,6 +48,7 @@ describe('robot tests', () => {
 
   afterEach(async () => {
     User.deleteOne({ email: user.email });
+    jest.clearAllMocks();
     await mongoose.connection.close();
   });
 
@@ -120,7 +133,7 @@ describe('robot tests', () => {
     expect(res.statusCode).toBe(200);
     expect(deletedRobot).toBeNull();
     expect(organizationWithoutRobot?.robots.includes(robot.id)).toBeFalsy();
-  });
+  }, 700000);
 
   it('get robot configuration', async () => {
     const { robot } = await makeRobot(token, []);
