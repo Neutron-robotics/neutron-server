@@ -31,6 +31,16 @@ jest.mock('../src/api/elasticsearch/connectionDashboard', () => ({
   createConnectionDashboard: jest.fn()
 }));
 
+jest.mock('../src/api/elasticsearch/roles', () => ({
+  createOrganizationRole: jest.fn(),
+  addRolesToUser: jest.fn(),
+  removeRolesFromUser: jest.fn()
+}));
+
+jest.mock('../src/api/elasticsearch/users', () => ({
+  createElasticUser: jest.fn()
+}));
+
 describe('robot tests', () => {
   let user: any = {};
   let token: string = '';
@@ -73,6 +83,8 @@ describe('robot tests', () => {
     expect(orga?.robots.length).toBeGreaterThan(0);
     expect(orga?.robots.map(e => e.toString()).includes(robot?.id.toString())).toBeTruthy();
     expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBeDefined();
+    expect(res.body.secretKey).toBeDefined();
     expect(robot).toBeDefined();
     expect(robot?.linked).toBe(false);
     expect(robot?.name).toBe(robotName);

@@ -24,14 +24,14 @@ const inviteUser: RequestHandler<any> = async (
   const { body } = req;
 
   try {
-    if (!process.env.BASE_URI) throw new ApplicationError('The base URI is not defined');
+    if (!process.env.WEB_APPLICATION_URI) throw new ApplicationError('WEB_APPLICATION_URI is not defined');
 
     const token = await Token.create({
       expirationDate: moment().add(14, 'days').toDate(),
       category: TokenCategory.AccountCreation
     });
 
-    const invitationUrl = new URL(`/register/${token.key}`, process.env.BASE_URI);
+    const invitationUrl = new URL(`/register/${token.key}`, process.env.WEB_APPLICATION_URI);
 
     sendEmail({
       subject: 'Register to Neutron',

@@ -4,8 +4,6 @@ import elasticServer from './elastic';
 import kibanaServer from './kibana';
 
 const createOrganizationRole = async (organization: IOrganizationDocument) => {
-//   const organizationNameNormalized = replaceAll(organizationName, ' ', '-').toLowerCase();
-//   const roleName = `organization-${organizationNameNormalized}`;
   const roleName = organization.toElasticRoleName();
 
   const indices = [
@@ -31,7 +29,7 @@ const createOrganizationRole = async (organization: IOrganizationDocument) => {
     });
     logger.info('Role created successfully:', response.data);
   } catch (error: any) {
-    logger.error('Error creating role:', error.response.data);
+    logger.error(`Error creating role ${roleName}`, error);
   }
 };
 
@@ -42,7 +40,7 @@ async function addRolesToUser(username: string, roles: string[]) {
     });
     logger.info('Roles added successfully.');
   } catch (error: any) {
-    logger.error('Error adding roles:', error.response.data);
+    logger.error(`Error adding roles ${roles.join(',')} to user ${username}`, error);
   }
 }
 
@@ -57,7 +55,7 @@ async function removeRolesFromUser(username: string, roles: string[]) {
     });
     logger.info('Roles removed successfully.');
   } catch (error: any) {
-    logger.error('Error removing roles:', error.response.data);
+    logger.error(`Error removing roles ${roles.join(',')} from user ${username}`, error);
   }
 }
 

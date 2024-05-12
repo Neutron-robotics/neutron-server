@@ -41,7 +41,7 @@ const register: RequestHandler = async (req: Request<{}, {}, RegisterBody>, res,
 
     await user.save();
 
-    const invitationUrl = new URL(`/verify/${user.activationKey}`, process.env.BASE_URI);
+    const invitationUrl = new URL(`/verify/${user.activationKey}`, process.env.WEB_APPLICATION_URI);
 
     sendEmail({
       to: user.email,

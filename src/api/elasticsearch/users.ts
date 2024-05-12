@@ -8,9 +8,9 @@ const createElasticUser = async (user: IElasticUserCreate) => {
       `/_security/user/${user.username}`,
       { ...user }
     );
-    logger.info('Elasticsearch user created successfully:', response.data);
+    logger.info('ES user created successfully:', response.data);
   } catch (error: any) {
-    logger.error('Error creating user:', error.response.data);
+    logger.error(`Error creating ES user ${user.email}`, error);
   }
 };
 

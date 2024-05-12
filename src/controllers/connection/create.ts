@@ -69,7 +69,8 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
       msgs.forEach(msg => {
         if (!msg.length) return;
         connectionLogger.info(msg, {
-          organizationId: organization.id
+          organizationId: organization.id,
+          robotId: robot.id
         });
       });
     });

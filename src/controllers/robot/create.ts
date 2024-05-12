@@ -62,7 +62,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateRobotBody>, res
     organization.robots.push(robot._id);
     await organization.save();
 
-    const dataviewId = await createDataView(`Robot connection ${robot.name}`, `neutron-connection-${organization.id}-${robot.id}`);
+    const dataviewId = await createDataView(`Robot connection ${robot.name}`, `neutron-connection-${organization.id}-${robot.id}*`);
     if (dataviewId) {
       await createConnectionDashboard({
         id: robot.id,
@@ -74,7 +74,8 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateRobotBody>, res
 
     res.send({
       message: 'OK',
-      id: robot.id
+      id: robot.id,
+      secretKey: robot.secretKey
     });
   } catch (error: any) {
     next(error);

@@ -14,7 +14,7 @@ async function createDataView(name: string, index: string) {
     logger.info(`Data view ${name} created successfuly`);
     return response.data['data_view'].id as string;
   } catch (error: any) {
-    logger.error(`Error creating data view ${name}: ${error.response.data}`);
+    logger.error(`Error creating data view ${name}`, error);
   }
 }
 
@@ -22,8 +22,8 @@ async function getDataViewByIndexPattern(index: string): Promise<KibanaSavedObje
   try {
     const res = await kibanaServer.get(`/api/saved_objects/_find?type=index-pattern&search_fields=title&search=${index}*`);
     return res.data.saved_objects as KibanaSavedObject<any>[];
-  } catch (error) {
-    logger.error(`Error getting dataview ${index}`);
+  } catch (error: any) {
+    logger.error(`Error getting dataview ${index}`, error);
   }
 }
 
@@ -32,7 +32,7 @@ async function deleteDataViewById(id: string) {
     await kibanaServer.delete(`/api/data_views/data_view/${id}`);
     logger.info(`data view ${id} deleted successfully`);
   } catch (error: any) {
-    logger.error(`Error deleting dataview ${id}: ${error.response.data}`);
+    logger.error(`Error deleting dataview ${id}`, error);
   }
 }
 
