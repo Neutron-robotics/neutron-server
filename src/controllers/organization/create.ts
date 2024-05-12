@@ -41,7 +41,11 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
       logger.error(`Failed creating ES ${organization.name} role, aborting user role definition`);
       return;
     }
-    await addRolesToUser(owner.toElasticUsername(), [organization.toElasticRoleName()]);
+    if (!owner.elasticUsername) {
+      logger.error(`Failed creating ES ${organization.name}, user is not registered in Elasticsearch`);
+      return;
+    }
+    await addRolesToUser(owner.elasticUsername, [organization.toElasticRoleName()]);
 
     return res.json({
       message: 'OK'

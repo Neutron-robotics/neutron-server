@@ -50,7 +50,7 @@ const demote: RequestHandler<any> = async (
     organization.users = organization.users.filter(e => e.userId.toString() !== userToBeDemoted._id.toString());
 
     // Manage Elasticsearch permissions for the promoted user
-    await removeRolesFromUser(userToBeDemoted.toElasticUsername(), [organization.toElasticRoleName()]);
+    if (userToBeDemoted.elasticUsername) await removeRolesFromUser(userToBeDemoted.elasticUsername, [organization.toElasticRoleName()]);
 
     await organization.save();
     return res.json({

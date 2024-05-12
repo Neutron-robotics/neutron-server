@@ -14,4 +14,4 @@ const createElasticUser = async (user: IElasticUserCreate) => {
   }
 };
 
-export default createElasticUser;
+export { createElasticUser };

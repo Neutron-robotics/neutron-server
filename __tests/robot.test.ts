@@ -17,6 +17,7 @@ import { RobotStatus } from '../src/models/RobotStatus';
 import { sleep } from '../src/utils/time';
 import { deleteDataViewByIndexPattern, createDataView } from '../src/api/elasticsearch/dataview';
 import { deleteDashboard, createConnectionDashboard } from '../src/api/elasticsearch/connectionDashboard';
+import { createElasticUser } from '../src/api/elasticsearch/users';
 
 jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 jest.mock('axios');

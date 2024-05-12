@@ -18,6 +18,7 @@ export interface IUser extends Document {
   firstName: string;
   lastName: string;
   imgUrl: string
+  elasticUsername: string | undefined;
   activationKey: string | undefined;
   active: boolean;
   role: string;
@@ -26,6 +27,7 @@ export interface IUser extends Document {
 export interface IUserDTO {
   id: string
   email: string;
+  elasticUsername: string | undefined
   firstName: string;
   lastName: string;
   imgUrl: string
@@ -33,7 +35,7 @@ export interface IUserDTO {
 
 interface IUserDocument extends IUser {
   toDTOModel(): IUserDTO
-  toElasticUsername(): string
+  toElasticUsername(): Promise<string>
   passwordMatches(password: string): boolean
 }
 
@@ -64,6 +66,10 @@ const userSchema = new Schema<IUserDocument>(
       maxlength: 50
     },
     lastName: {
+      type: String,
+      maxlength: 50
+    },
+    elasticUsername: {
       type: String,
       maxlength: 50
     },
@@ -128,6 +134,7 @@ userSchema.method<IUser>(
     const userDTO: IUserDTO = {
       id: this.id,
       email: this.email,
+      elasticUsername: this.elasticUsername,
       firstName: this.firstName,
       lastName: this.lastName,
       imgUrl: this.imgUrl
@@ -138,8 +145,20 @@ userSchema.method<IUser>(
 
 userSchema.method<IUser>(
   'toElasticUsername',
-  function () {
-    return replaceAll(`${this.firstName}-${this.lastName}`, ' ', '');
+  async function () {
+    const username = `${this.firstName}-${this.lastName}`.replace(/\s/g, ''); // Remove spaces from the full name
+
+    let count = 1;
+    let uniqueUsername: string = username;
+
+    // Check if the username already exists in the Model User
+    // eslint-disable-next-line no-use-before-define
+    while (await User.exists({ elasticUsername: uniqueUsername })) {
+      uniqueUsername = `${username}${count}`; // Append count to make it unique
+      count++;
+    }
+
+    return uniqueUsername;
   }
 );
 

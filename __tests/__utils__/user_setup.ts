@@ -25,12 +25,15 @@ const makeUser = async (verify: boolean, customUser?: Partial<IUserDTO>) => {
         registrationKey: token.key
       }
     );
-  const user = await User.findOne({
+  let user = await User.findOne({
     email: randomUser.email.toLowerCase()
   }).exec();
   if (verify) {
     const r = await request(app)
       .post(`/auth/verify?key=${user?.activationKey}`);
+    user = await User.findOne({
+      email: randomUser.email.toLowerCase()
+    }).exec();
   }
   if (!user) { throw new Error('The test user failed to be created'); };
 

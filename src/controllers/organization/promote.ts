@@ -84,12 +84,14 @@ const promote: RequestHandler<any> = async (
     };
 
     // Manage Elasticsearch permissions for the promoted user
-    if ([OrganizationPermissions.Admin,
-      OrganizationPermissions.Analyst,
-      OrganizationPermissions.Owner].some(e => userToBeGrantedRelation?.permissions.includes(e))) {
-      addRolesToUser(userToBeGranted.toElasticUsername(), [organization.toElasticRoleName()]);
-    } else {
-      removeRolesFromUser(userToBeGranted.toElasticUsername(), [organization.toElasticRoleName()]);
+    if (userToBeGranted.elasticUsername) {
+      if ([OrganizationPermissions.Admin,
+        OrganizationPermissions.Analyst,
+        OrganizationPermissions.Owner].some(e => userToBeGrantedRelation?.permissions.includes(e))) {
+        addRolesToUser(userToBeGranted.elasticUsername, [organization.toElasticRoleName()]);
+      } else {
+        removeRolesFromUser(userToBeGranted.elasticUsername, [organization.toElasticRoleName()]);
+      }
     }
 
     await organization.save();

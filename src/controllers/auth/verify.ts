@@ -3,7 +3,7 @@ import Joi from 'joi';
 import User, { UserRole } from '../../models/User';
 import requestMiddleware from '../../middleware/request-middleware';
 import { BadRequest, Unauthorized } from '../../errors/bad-request';
-import createElasticUser from '../../api/elasticsearch/users';
+import { createElasticUser } from '../../api/elasticsearch/users';
 
 export const verifyQuery = Joi.object().keys({
   key: Joi.string().required().min(4)
@@ -21,16 +21,18 @@ const verify: RequestHandler = async (req: Request<{}, {}, VerifyQuery>, res, ne
       throw new Unauthorized();
     }
 
-    user.role = UserRole.Verified;
-    user.activationKey = undefined;
-    await user.save();
-
+    const elasticUsername = await user.toElasticUsername();
     await createElasticUser({
-      username: user.toElasticUsername(),
+      username: elasticUsername,
       password_hash: user.password,
       email: user.email,
       roles: []
     });
+
+    user.elasticUsername = elasticUsername;
+    user.role = UserRole.Verified;
+    user.activationKey = undefined;
+    await user.save();
 
     return res.json({ message: 'OK' });
   } catch (error) {
