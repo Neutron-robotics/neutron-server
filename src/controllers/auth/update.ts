@@ -9,6 +9,7 @@ export const updateSchema = Joi.object().keys({
   email: Joi.string(),
   firstName: Joi.string(),
   lastName: Joi.string(),
+  imgUrl: Joi.string(),
   password: Joi.string()
 });
 
@@ -35,6 +36,7 @@ const update: RequestHandler = async (req: Request<{}, {}, UpdateBody>, res, nex
 
     if (body.email) { user.email = body.email; };
     if (body.firstName) { user.firstName = body.firstName; };
+    if (body.imgUrl) { user.imgUrl = body.imgUrl; }
     if (body.lastName) { user.lastName = body.lastName; };
     if (body.password) { user.password = body.password; };
     await user.save();
