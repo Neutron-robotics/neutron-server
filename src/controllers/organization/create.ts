@@ -3,13 +3,15 @@ import Joi from 'joi';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
 import Organization, { OrganizationPermissions } from '../../models/Organization';
-import { UserRole } from '../../models/User';
+import User, { UserRole } from '../../models/User';
+import logger from '../../logger';
+import { addRolesToUser, createOrganizationRole } from '../../api/elasticsearch/roles';
 
 const createSchema = Joi.object().keys({
   name: Joi.string().required(),
   company: Joi.string().required(),
   description: Joi.string().required(),
-  imgUrl: Joi.string().required()
+  imgUrl: Joi.string().optional()
 });
 
 interface CreateBody {
@@ -32,6 +34,19 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
       }]
     });
     await organization.save();
+
+    await createOrganizationRole(organization);
+    const owner = await User.findById(userId);
+    if (!owner) {
+      logger.error(`Failed creating ES ${organization.name} role, aborting user role definition`);
+      return;
+    }
+    if (!owner.elasticUsername) {
+      logger.error(`Failed creating ES ${organization.name}, user is not registered in Elasticsearch`);
+      return;
+    }
+    await addRolesToUser(owner.elasticUsername, [organization.toElasticRoleName()]);
+
     return res.json({
       message: 'OK'
     });
@@ -40,4 +55,4 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateBody>, res, nex
   }
 };
 
-export default withAuth(requestMiddleware(create, { validation: { body: createSchema } }), { roles: [UserRole.Verified] });
+export default withAuth(requestMiddleware(create, { validation: { body: createSchema } }), { role: UserRole.Verified });

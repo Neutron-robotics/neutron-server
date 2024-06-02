@@ -79,5 +79,5 @@ export default withAuth(
       }
     }
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

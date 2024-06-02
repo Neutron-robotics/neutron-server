@@ -21,8 +21,8 @@ const updatePartsSchema = Joi.object<UpdateRobotPart>().keys({
   category: Joi.string().valid(...Object.values(RobotPartCategory)).optional(),
   name: Joi.string().optional(),
   imgUrl: Joi.optional(),
-  ros2Node: Joi.string().optional(),
-  ros2Package: Joi.string().optional()
+  ros2Node: Joi.string().optional().allow(''),
+  ros2Package: Joi.string().optional().allow('')
 });
 
 const updateSchemaParams = Joi.object<UpdatePartSchema>().keys({
@@ -74,4 +74,4 @@ const update: RequestHandler<any> = async (req: Request<UpdatePartSchema, {}, Up
 export default withAuth(requestMiddleware(
   update,
   { validation: { params: updateSchemaParams, body: updatePartsSchema } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

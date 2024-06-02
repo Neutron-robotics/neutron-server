@@ -73,4 +73,4 @@ const createSubscriber: RequestHandler<any> = async (req: Request<CreateSubscrib
 export default withAuth(requestMiddleware(
   createSubscriber,
   { validation: { params: createSubscriberSchemaParams, body: createSubscriberSchemaBody } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

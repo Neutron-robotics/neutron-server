@@ -5,7 +5,7 @@ export interface ROS2ActionStructure {
   actionType: mongoose.Types.ObjectId;
 }
 
-const ROS2ActionSchema = new Schema<ROS2ActionStructure>({
+const ROS2ActionSchema = new Schema<ROS2ActionStructure & Document>({
   name: {
     type: String,
     required: true

@@ -2,8 +2,8 @@ import dotenv from 'dotenv';
 import util from 'util';
 import app from './app';
 import SafeMongooseConnection from './lib/safe-mongoose-connection';
-import logger from './logger';
 import runStartUpActions from './startup';
+import logger from './logger';
 
 const result = dotenv.config();
 if (result.error) {

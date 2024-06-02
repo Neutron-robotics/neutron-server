@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { Request, RequestHandler } from 'express';
-import { NeutronGraphType } from '@hugoperier/neutron-core';
+import { NeutronGraphType } from '@neutron-robotics/neutron-core';
 import NeutronGraph, { INeutronEdge, INeutronNode } from '../../models/NeutronGraph';
 import requestMiddleware from '../../middleware/request-middleware';
 import { withAuth } from '../../middleware/withAuth';
@@ -72,5 +72,5 @@ export default withAuth(
     create,
     { validation: { body: createSchema } }
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

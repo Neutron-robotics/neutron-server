@@ -18,17 +18,17 @@ const closeOpenConnections = async () => {
   try {
     await Promise.all(closeConnectionPromise);
   } catch (err: any) {
-    logger.error('An error happens while closing connection', err.message);
+    logger.error(`An error happens while closing connection ${err.message}`);
   }
 
   const closedConnectionRobotIds = openConnections.map(e => e.robotId);
   const robots = await Robot.find({ _id: { $in: closedConnectionRobotIds } });
-  const stopRobotPromises = robots.map(robot => axios.post(`http://${robot.hostname}:8000/robot/stop`));
+  const stopRobotPromises = robots.map(robot => axios.post(`http://${robot.hostname}:8000/robot/stop`)); // todo port
 
   try {
     await Promise.all(stopRobotPromises);
   } catch (err: any) {
-    logger.error('An error happens while stopping robot', err.message);
+    logger.error(`An error happens while stopping robot ${err.message}`);
   }
 };
 

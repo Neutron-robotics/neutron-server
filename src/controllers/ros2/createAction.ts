@@ -72,4 +72,4 @@ const createAction: RequestHandler<any> = async (req: Request<CreateActionParams
 export default withAuth(requestMiddleware(
   createAction,
   { validation: { params: createActionSchemaParams, body: createActionSchemaBody } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

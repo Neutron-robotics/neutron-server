@@ -4,12 +4,14 @@ import join from './join';
 import closeConnection from './closeConnection';
 import getConnectionById from './getConnectionById';
 import me from './me';
+import getConnectionByRobotId from './getConnectionByRobotId';
 
 const useConnection = (router: Router) => {
+  router.get('/connection', me);
+  router.get('/connection/robot/:robotId', getConnectionByRobotId);
+  router.get('/connection/:connectionId', getConnectionById);
   router.post('/connection/create', create);
   router.post('/connection/join/:connectionId', join);
-  router.get('/connection', me);
-  router.get('/connection/:connectionId', getConnectionById);
   router.post('/connection/close/:connectionId', closeConnection);
 };
 

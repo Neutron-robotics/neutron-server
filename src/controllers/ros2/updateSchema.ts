@@ -2,7 +2,7 @@ import Joi from 'joi';
 import { RequestHandler, Request } from 'express';
 import {
   IRos2Action, IRos2Publisher, IRos2Service, IRos2Subscriber, IRos2Topic
-} from '@hugoperier/neutron-core';
+} from '@neutron-robotics/neutron-core';
 import Organization, {
   OrganizationPermissions
 } from '../../models/Organization';
@@ -127,5 +127,5 @@ export default withAuth(
       body: updateSchemaBody
     }
   }),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

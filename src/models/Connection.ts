@@ -11,6 +11,7 @@ export interface IConnection extends Document {
     closedAt: Date
     pid: string
     port: number
+    participants: Types.ObjectId[]
 }
 
 export interface IConnectionDTO {
@@ -21,6 +22,7 @@ export interface IConnectionDTO {
   createdAt: Date
   closedAt: Date
   port: number
+  participants: Types.ObjectId[]
 }
 
 interface IConnectionDocument extends IConnection {
@@ -56,7 +58,11 @@ const ConnectionSchema = new Schema<IConnectionDocument>({
   port: {
     type: Number,
     required: true
-  }
+  },
+  participants: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 });
 
 ConnectionSchema.method<IConnection>('toDTOModel', function (robot?: IRobotDocument) {
@@ -67,7 +73,8 @@ ConnectionSchema.method<IConnection>('toDTOModel', function (robot?: IRobotDocum
     createdBy: this.createdBy,
     createdAt: this.createdAt,
     closedAt: this.closedAt,
-    port: this.port
+    port: this.port,
+    participants: this.participants
   };
   return connectionDTO;
 });

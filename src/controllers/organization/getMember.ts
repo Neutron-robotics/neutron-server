@@ -61,4 +61,4 @@ const getMember: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   getMember,
   { validation: { params: getMemberSchemaParams, query: MemberSchemaQuery } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

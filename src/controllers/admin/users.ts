@@ -6,13 +6,21 @@ import { withAuth } from '../../middleware/withAuth';
 const users: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
   try {
     const allUsers = await User.find().exec();
+
+    const allUsersFormatted = allUsers.map(user => {
+      const {
+        _id, password, activationKey, ...rest
+      } = user.toObject();
+      return { id: _id, ...rest };
+    });
+
     return res.json({
       message: 'OK',
-      users: allUsers
+      users: allUsersFormatted
     });
   } catch (error) {
     next(error);
   }
 };
 
-export default withAuth(requestMiddleware(users), { roles: [UserRole.Admin] });
+export default withAuth(requestMiddleware(users), { role: UserRole.Admin });

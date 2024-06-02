@@ -54,4 +54,4 @@ const deleteService: RequestHandler<any> = async (req: Request<DeleteServicePara
 export default withAuth(requestMiddleware(
   deleteService,
   { validation: { params: deleteServiceSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

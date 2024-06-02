@@ -51,4 +51,4 @@ const getConnectionById: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   getConnectionById,
   { validation: { query: getMyConnectionsSchemaQuery } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

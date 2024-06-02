@@ -59,4 +59,4 @@ const start: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   start,
   { validation: { params: startSchemaParams, body: startSchemaBody } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

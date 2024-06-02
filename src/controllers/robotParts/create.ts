@@ -43,7 +43,8 @@ const create: RequestHandler<any> = async (req: Request<CreatePartSchema, {}, Cr
     robot.parts.push(robotPart);
     await robot.save();
     res.send({
-      message: 'OK'
+      message: 'OK',
+      id: robotPart.id
     });
   } catch (error: any) {
     next(error);
@@ -53,4 +54,4 @@ const create: RequestHandler<any> = async (req: Request<CreatePartSchema, {}, Cr
 export default withAuth(requestMiddleware(
   create,
   { validation: { params: createSchemaParams, body: partsSchema } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

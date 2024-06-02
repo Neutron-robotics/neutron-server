@@ -9,11 +9,13 @@ export interface ROS2ServiceMessageStructure {
   name: string
   request: Ros2Field[];
   response: Ros2Field[];
+  isStandard: boolean
 }
 
 export interface ROS2MessageStructure {
   name: string
   fields: Ros2Field[]
+  isStandard: boolean
 }
 
 export interface ROS2ActionMessageStructure {
@@ -21,11 +23,12 @@ export interface ROS2ActionMessageStructure {
   goal: Ros2Field[]
   feedback: Ros2Field[]
   result: Ros2Field[]
+  isStandard: boolean
 }
 
 // Service model definition
 
-const ROS2ServiceMessageSchema = new Schema<ROS2ServiceMessageStructure>({
+const ROS2ServiceMessageSchema = new Schema<ROS2ServiceMessageStructure & Document>({
   request: {
     type: [{
       fieldtype: String,
@@ -43,6 +46,11 @@ const ROS2ServiceMessageSchema = new Schema<ROS2ServiceMessageStructure>({
   name: {
     type: String,
     required: true
+  },
+  isStandard: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 });
 
@@ -53,7 +61,7 @@ const ROS2ServiceMessageModel = mongoose.model<ROS2ServiceMessageStructure & Doc
 
 // Message model definition
 
-const ROS2MessageSchema = new Schema<ROS2MessageStructure>({
+const ROS2MessageSchema = new Schema<ROS2MessageStructure & Document>({
   fields: {
     type: [{
       fieldtype: String,
@@ -64,6 +72,11 @@ const ROS2MessageSchema = new Schema<ROS2MessageStructure>({
   name: {
     type: String,
     required: true
+  },
+  isStandard: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 });
 
@@ -74,7 +87,7 @@ const ROS2MessageModel = mongoose.model<ROS2MessageStructure & Document>(
 
 // Action model definition
 
-const ROS2ActionMessageSchema = new Schema<ROS2ActionMessageStructure>({
+const ROS2ActionMessageSchema = new Schema<ROS2ActionMessageStructure & Document>({
   goal: {
     type: [{
       fieldtype: String,
@@ -99,6 +112,11 @@ const ROS2ActionMessageSchema = new Schema<ROS2ActionMessageStructure>({
   name: {
     type: String,
     required: true
+  },
+  isStandard: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 });
 

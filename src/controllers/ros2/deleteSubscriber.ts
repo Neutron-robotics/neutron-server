@@ -54,4 +54,4 @@ const deleteSubscriber: RequestHandler<any> = async (req: Request<DeleteSubscrib
 export default withAuth(requestMiddleware(
   deleteSubscriber,
   { validation: { params: deleteSubscriberSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

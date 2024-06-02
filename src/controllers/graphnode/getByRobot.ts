@@ -53,5 +53,5 @@ export default withAuth(
     getByRobot,
     { validation: { params: getByRobotParamsSchema, query: getByRobotQuerySchema } }
   ),
-  { roles: [UserRole.Verified] }
+  { role: UserRole.Verified }
 );

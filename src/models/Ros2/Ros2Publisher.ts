@@ -6,7 +6,7 @@ export interface ROS2PublisherStructure {
   frequency: number
 }
 
-const ROS2PublisherSchema = new Schema<ROS2PublisherStructure>({
+const ROS2PublisherSchema = new Schema<ROS2PublisherStructure & Document>({
   name: {
     type: String,
     required: true

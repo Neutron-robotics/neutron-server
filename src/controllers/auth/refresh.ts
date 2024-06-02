@@ -5,7 +5,7 @@ import { withAuth } from '../../middleware/withAuth';
 
 const refresh: RequestHandler = async (req: Request<{}, {}, {}>, res, next) => {
   const { user } = req as any;
-  const tokenPayload = { sub: user.sub, roles: user.roles };
+  const tokenPayload = { sub: user.sub, role: user.role };
 
   try {
     const token = sign(tokenPayload, process.env.APP_SECRET ?? '', { expiresIn: '1d' });

@@ -42,4 +42,4 @@ const getById: RequestHandler<any> = async (
 export default withAuth(requestMiddleware(
   getById,
   { validation: { params: getRobotSchemaParams } }
-), { roles: [UserRole.Verified] });
+), { role: UserRole.Verified });

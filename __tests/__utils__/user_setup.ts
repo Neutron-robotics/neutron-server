@@ -1,31 +1,39 @@
 import request from 'supertest';
 import { generateRandomString } from './string';
 import app from '../../src/app';
-import User from '../../src/models/User';
+import User, { IUserDTO, UserRole } from '../../src/models/User';
+import Token, { TokenCategory } from '../../src/models/Token';
 
-const makeUser = async (verify: boolean) => {
+const makeUser = async (verify: boolean, customUser?: Partial<IUserDTO>) => {
   const randomUser = {
-    firstName: 'hugo',
-    lastName: 'user',
+    firstName: customUser?.firstName ?? 'hugo',
+    lastName: customUser?.lastName ?? 'user',
     password: 'toto1234',
-    email: `hugo.user@test-${generateRandomString(5)}.com`
+    email: customUser?.email ?? `hugo.user@test-${generateRandomString(5)}.com`
   };
-  await request(app)
+
+  const token = await Token.create({ category: TokenCategory.AccountCreation });
+
+  const regRes = await request(app)
     .post('/auth/register')
     .send(
       {
         firstName: randomUser.firstName,
         lastName: randomUser.lastName,
         password: randomUser.password,
-        email: randomUser.email
+        email: randomUser.email,
+        registrationKey: token.key
       }
     );
-  const user = await User.findOne({
+  let user = await User.findOne({
     email: randomUser.email.toLowerCase()
   }).exec();
   if (verify) {
-    await request(app)
+    const r = await request(app)
       .post(`/auth/verify?key=${user?.activationKey}`);
+    user = await User.findOne({
+      email: randomUser.email.toLowerCase()
+    }).exec();
   }
   if (!user) { throw new Error('The test user failed to be created'); };
 
@@ -39,6 +47,8 @@ const makeAdminUser = async () => {
     password: 'toto1234',
     email: `hugo.admin@test-${generateRandomString(5)}.com`
   };
+  const token = await Token.create({ category: TokenCategory.AccountCreation });
+
   await request(app)
     .post('/auth/register')
     .send(
@@ -46,13 +56,14 @@ const makeAdminUser = async () => {
         firstName: adminUser.firstName,
         lastName: adminUser.lastName,
         password: adminUser.password,
-        email: adminUser.email
+        email: adminUser.email,
+        registrationKey: token.key
       }
     );
 
   const user = await User.findOne({ email: adminUser.email.toLowerCase() }).exec();
-  if (user?.roles) {
-    user.roles = ['admin'];
+  if (user?.role) {
+    user.role = UserRole.Admin;
     user.active = true;
     await user.save();
   };

@@ -4,6 +4,7 @@ import {
 } from 'mongoose';
 import { BadRequest, NotFound, Unauthorized } from '../errors/bad-request';
 import logger from '../logger';
+import { replaceAll } from '../utils/string';
 
 export enum UserRole {
   User = 'user',
@@ -17,14 +18,16 @@ export interface IUser extends Document {
   firstName: string;
   lastName: string;
   imgUrl: string
-  activationKey: string;
+  elasticUsername: string | undefined;
+  activationKey: string | undefined;
   active: boolean;
-  roles: string[];
+  role: string;
 }
 
 export interface IUserDTO {
   id: string
   email: string;
+  elasticUsername: string | undefined
   firstName: string;
   lastName: string;
   imgUrl: string
@@ -32,6 +35,7 @@ export interface IUserDTO {
 
 interface IUserDocument extends IUser {
   toDTOModel(): IUserDTO
+  toElasticUsername(): Promise<string>
   passwordMatches(password: string): boolean
 }
 
@@ -65,6 +69,10 @@ const userSchema = new Schema<IUserDocument>(
       type: String,
       maxlength: 50
     },
+    elasticUsername: {
+      type: String,
+      maxlength: 50
+    },
     imgUrl: {
       type: String
     },
@@ -84,9 +92,9 @@ const userSchema = new Schema<IUserDocument>(
       type: Boolean,
       default: false
     },
-    roles: {
-      type: [String],
-      default: [UserRole.User],
+    role: {
+      type: String,
+      default: UserRole.User,
       enum: UserRole
     }
   },
@@ -96,7 +104,6 @@ const userSchema = new Schema<IUserDocument>(
 );
 
 userSchema.pre('save', async function save(next) {
-  logger.info('pre', this.isModified('password'), this.isNew);
   if (this.isModified('password') || this.isNew) {
     try {
       const salt = await genSalt(10);
@@ -104,34 +111,13 @@ userSchema.pre('save', async function save(next) {
       this.password = h;
       next();
     } catch (err: any) {
-      logger.error(`Error: ${err}`);
+      logger.error(`Failed to pre save password ${err}`, {
+        userId: this.id
+      });
       next(err);
     }
   } else {
     return next();
-  }
-});
-
-userSchema.post('save', async (doc, next) => {
-  try {
-    // const mailOptions = {
-    //   from: 'noreply',
-    //   to: this.email,
-    //   subject: 'Confirm creating account',
-    //   html: `<div><h1>Hello new user!</h1><p>Click <a href="${config.hostname}/api/auth/confirm?key=${this.activationKey}">link</a> to activate your new account.</p></div><div><h1>Hello developer!</h1><p>Feel free to change this template ;).</p></div>`
-    // };
-
-    // transporter.sendMail(mailOptions, (error, info) => {
-    //   if (error) {
-    //     console.log(error);
-    //   } else {
-    //     console.log(`Email sent: ${info.response}`);
-    //   }
-    // });
-
-    return next();
-  } catch (error: any) {
-    return next(error);
   }
 });
 
@@ -148,11 +134,31 @@ userSchema.method<IUser>(
     const userDTO: IUserDTO = {
       id: this.id,
       email: this.email,
+      elasticUsername: this.elasticUsername,
       firstName: this.firstName,
       lastName: this.lastName,
       imgUrl: this.imgUrl
     };
     return userDTO;
+  }
+);
+
+userSchema.method<IUser>(
+  'toElasticUsername',
+  async function () {
+    const username = `${this.firstName}-${this.lastName}`.replace(/\s/g, ''); // Remove spaces from the full name
+
+    let count = 1;
+    let uniqueUsername: string = username;
+
+    // Check if the username already exists in the Model User
+    // eslint-disable-next-line no-use-before-define
+    while (await User.exists({ elasticUsername: uniqueUsername })) {
+      uniqueUsername = `${username}${count}`; // Append count to make it unique
+      count++;
+    }
+
+    return uniqueUsername;
   }
 );
 
@@ -169,7 +175,12 @@ userSchema.statics.findAndGenerateToken = async function (payload: {
 
   const passwordOK = await user.passwordMatches(password);
 
-  if (!passwordOK) throw new Unauthorized('Password mismatch');
+  if (!passwordOK) {
+    logger.info('User login with incorrect password', {
+      userId: user.id
+    });
+    throw new Unauthorized('Password mismatch');
+  }
 
   if (!user.active) throw new Unauthorized('User not activated');
 

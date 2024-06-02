@@ -16,10 +16,11 @@ interface DeleteBody {
 const deleteUser: RequestHandler = async (req: Request<{}, {}, DeleteBody>, res, next) => {
   const { body } = req;
   const user = await User.findOne({ _id: body.id }).exec();
+
   if (!user) {
-    next(new NotFound());
-    return;
+    throw new NotFound();
   }
+
   user.active = false;
   try {
     await user.save();
@@ -29,4 +30,4 @@ const deleteUser: RequestHandler = async (req: Request<{}, {}, DeleteBody>, res,
   }
 };
 
-export default withAuth(requestMiddleware(deleteUser, { validation: { body: deleteSchema } }), { roles: [UserRole.Admin] });
+export default withAuth(requestMiddleware(deleteUser, { validation: { body: deleteSchema } }), { role: UserRole.Admin });
