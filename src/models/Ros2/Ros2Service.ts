@@ -5,7 +5,7 @@ export interface ROS2ServiceStructure {
   serviceType: mongoose.Types.ObjectId;
 }
 
-const ROS2ServiceSchema = new Schema<ROS2ServiceStructure>({
+const ROS2ServiceSchema = new Schema<ROS2ServiceStructure & Document>({
   name: {
     type: String,
     required: true

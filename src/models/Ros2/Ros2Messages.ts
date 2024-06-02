@@ -28,7 +28,7 @@ export interface ROS2ActionMessageStructure {
 
 // Service model definition
 
-const ROS2ServiceMessageSchema = new Schema<ROS2ServiceMessageStructure>({
+const ROS2ServiceMessageSchema = new Schema<ROS2ServiceMessageStructure & Document>({
   request: {
     type: [{
       fieldtype: String,
@@ -61,7 +61,7 @@ const ROS2ServiceMessageModel = mongoose.model<ROS2ServiceMessageStructure & Doc
 
 // Message model definition
 
-const ROS2MessageSchema = new Schema<ROS2MessageStructure>({
+const ROS2MessageSchema = new Schema<ROS2MessageStructure & Document>({
   fields: {
     type: [{
       fieldtype: String,
@@ -87,7 +87,7 @@ const ROS2MessageModel = mongoose.model<ROS2MessageStructure & Document>(
 
 // Action model definition
 
-const ROS2ActionMessageSchema = new Schema<ROS2ActionMessageStructure>({
+const ROS2ActionMessageSchema = new Schema<ROS2ActionMessageStructure & Document>({
   goal: {
     type: [{
       fieldtype: String,

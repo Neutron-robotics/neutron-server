@@ -6,7 +6,7 @@ ENV GITHUB_TOKEN $GITHUB_TOKEN
 
 # Use the github token for accessing private package repository
 RUN echo //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN >> ~/.npmrc
-RUN echo @[hugoperier]:registry=https://npm.pkg.github.com/ >> ~/.npmrc
+RUN echo @[neutron-robotics]:registry=https://npm.pkg.github.com/ >> ~/.npmrc
 
 # Add package file
 COPY package.json ./

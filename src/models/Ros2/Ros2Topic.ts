@@ -5,7 +5,7 @@ export interface ROS2TopicStructure {
   messageType: mongoose.Types.ObjectId;
 }
 
-const ROS2TopicSchema = new Schema<ROS2TopicStructure>({
+const ROS2TopicSchema = new Schema<ROS2TopicStructure & Document>({
   name: {
     type: String,
     required: true

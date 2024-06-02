@@ -5,7 +5,7 @@ export interface ROS2SubscriberStructure {
   topic: mongoose.Types.ObjectId;
 }
 
-const ROS2SubscriberSchema = new Schema<ROS2SubscriberStructure>({
+const ROS2SubscriberSchema = new Schema<ROS2SubscriberStructure & Document>({
   name: {
     type: String,
     required: true

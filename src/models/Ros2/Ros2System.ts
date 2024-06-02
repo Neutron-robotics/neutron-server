@@ -17,7 +17,7 @@ interface IRobotModel extends Model<Ros2System & Document> {
   getByRobotId(id: string): Ros2System & Document
 }
 
-const Ros2SystemSchema = new Schema<Ros2System>({
+const Ros2SystemSchema = new Schema<Ros2System & Document>({
   name: {
     type: String,
     required: true
