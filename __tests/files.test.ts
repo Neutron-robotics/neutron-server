@@ -16,14 +16,12 @@ describe('File service', () => {
       .attach('file', '__tests/__mixture__/image.png');
 
     const filePath = resp.body.url as string;
-    const fileName = filePath.split('file/')[1];
-
     expect(resp.statusCode).toBe(200);
-    expect(fileName).toBeDefined();
-    expect(fileName.endsWith('.png')).toBeTruthy();
-    expect(fs.lstatSync(`./data/${fileName}`).isFile()).toBeTruthy();
+    expect(filePath).toBeDefined();
+    expect(filePath.endsWith('.png')).toBeTruthy();
+    expect(fs.lstatSync(`./data/${filePath}`).isFile()).toBeTruthy();
 
-    fs.unlinkSync(`./data/${fileName}`);
+    fs.unlinkSync(`./data/${filePath}`);
   });
 
   it('Fetch a file', async () => {
