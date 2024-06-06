@@ -32,13 +32,11 @@ describe('File service', () => {
       .attach('file', '__tests/__mixture__/image.png');
 
     const filePath = resp.body.url as string;
-    const fileName = filePath.split('file/')[1];
 
     expect(resp.statusCode).toBe(200);
-    expect(fileName).toBeDefined();
 
     const resFile = await request(app)
-      .get(`/file/${fileName}`);
+      .get(`/file/${filePath}`);
 
     expect(resFile.statusCode).toBe(200);
     expect(resFile.headers['content-type']).toEqual('image/png');

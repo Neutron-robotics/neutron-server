@@ -1,8 +1,8 @@
 import request from 'supertest';
-import { generateRandomString } from './string';
 import app from '../../src/app';
 import User, { IUserDTO, UserRole } from '../../src/models/User';
 import Token, { TokenCategory } from '../../src/models/Token';
+import { generateRandomString } from '../../src/utils/random';
 
 const makeUser = async (verify: boolean, customUser?: Partial<IUserDTO>) => {
   const randomUser = {

@@ -1,11 +1,11 @@
 import request from 'supertest';
 import app from '../../src/app';
-import { generateRandomString } from './string';
 import Robot from '../../src/models/Robot';
 import { makeOrganization } from './organization_setup';
 import Organization from '../../src/models/Organization';
 import { RobotPartCategory } from '../../src/models/RobotPart';
 import { RobotStatus } from '../../src/models/RobotStatus';
+import { generateRandomString } from '../../src/utils/random';
 
 export interface IRobotPartModel {
   type: string

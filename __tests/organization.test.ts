@@ -6,9 +6,9 @@ import User from '../src/models/User';
 import { makeUser, withLogin } from './__utils__/user_setup';
 import { makeOrganization } from './__utils__/organization_setup';
 import Organization from '../src/models/Organization';
-import { generateRandomString } from './__utils__/string';
 import { makeRobot } from './__utils__/robot_setup';
 import { RobotPartCategory } from '../src/models/RobotPart';
+import { generateRandomString } from '../src/utils/random';
 
 jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 

@@ -24,7 +24,7 @@ export const partsSchema = Joi.object().keys({
 const createSchema = Joi.object().keys({
   name: Joi.string().required(),
   parts: Joi.array().items(partsSchema).optional(),
-  imgUrl: Joi.string().uri().optional(),
+  imgUrl: Joi.string().optional(),
   description: Joi.string(),
   connectionContextType: Joi.string().valid(...Object.values(ConnectionContextType)).required(),
   organizationId: Joi.string().required()

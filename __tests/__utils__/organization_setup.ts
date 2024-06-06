@@ -2,7 +2,7 @@
 import request from 'supertest';
 import app from '../../src/app';
 import Organization, { IOrganizationDocument } from '../../src/models/Organization';
-import { generateRandomString } from './string';
+import { generateRandomString } from '../../src/utils/random';
 
 const makeOrganization = async (token: string) => {
   const name = `test organization ${generateRandomString(6)}`;

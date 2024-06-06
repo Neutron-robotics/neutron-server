@@ -5,7 +5,6 @@ import axios from 'axios';
 import { makeUser, withLogin } from './__utils__/user_setup';
 import { makeRobot } from './__utils__/robot_setup';
 import User from '../src/models/User';
-import { generateRandomString } from './__utils__/string';
 import app from '../src/app';
 import { makeOrganization } from './__utils__/organization_setup';
 import Robot, { ConnectionContextType } from '../src/models/Robot';
@@ -18,6 +17,7 @@ import { sleep } from '../src/utils/time';
 import { deleteDataViewByIndexPattern, createDataView } from '../src/api/elasticsearch/dataview';
 import { deleteDashboard, createConnectionDashboard } from '../src/api/elasticsearch/connectionDashboard';
 import { createElasticUser } from '../src/api/elasticsearch/users';
+import { generateRandomString } from '../src/utils/random';
 
 jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 jest.mock('axios');

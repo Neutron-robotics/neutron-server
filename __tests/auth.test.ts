@@ -3,10 +3,10 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import app from '../src/app';
 import User from '../src/models/User';
-import { generateRandomString } from './__utils__/string';
 import { deleteUser, makeUser, withLogin } from './__utils__/user_setup';
 import Token, { TokenCategory } from '../src/models/Token';
 import sendEmail from '../src/utils/nodemailer/sendEmail';
+import { generateRandomString } from '../src/utils/random';
 
 jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 

@@ -9,7 +9,6 @@ import { makeUser, withLogin } from './__utils__/user_setup';
 import { makeOrganization } from './__utils__/organization_setup';
 import { makeRobot } from './__utils__/robot_setup';
 import Robot from '../src/models/Robot';
-import { generateRandomString } from './__utils__/string';
 
 describe('Elasticsearch integration tests', () => {
   it('dev', () => {

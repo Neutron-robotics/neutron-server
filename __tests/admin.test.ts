@@ -4,8 +4,8 @@ import mongoose from 'mongoose';
 import app from '../src/app';
 import User, { UserRole } from '../src/models/User';
 import { makeAdminUser, makeUser, withLogin } from './__utils__/user_setup';
-import { generateRandomString } from './__utils__/string';
 import sendEmail from '../src/utils/nodemailer/sendEmail';
+import { generateRandomString } from '../src/utils/random';
 
 jest.mock('../src/utils/nodemailer/sendEmail', () => jest.fn());
 

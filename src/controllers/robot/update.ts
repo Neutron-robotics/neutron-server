@@ -10,7 +10,7 @@ import ApplicationError from '../../errors/application-error';
 
 const updateRobotSchemaBody = Joi.object().keys({
   name: Joi.string(),
-  imgUrl: Joi.string().uri(),
+  imgUrl: Joi.string(),
   description: Joi.string(),
   connectionContextType: Joi.string().valid(...Object.values(ConnectionContextType))
 });
