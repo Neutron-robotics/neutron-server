@@ -17,7 +17,7 @@ export interface PublishSystemInformationRequest {
     network?: IRobotNetworkInfo;
     processes?: IRobotProcess[]
     context?: IRobotContextProcess
-    hash: string
+    hash: string,
   }
 }
 
@@ -37,7 +37,8 @@ const publishSystemInformationSchemaBody = Joi.object().keys({
       name: Joi.string().required()
     }).optional(),
     network: Joi.object({
-      hostname: Joi.string().required()
+      hostname: Joi.string().required(),
+      port: Joi.number().required()
     }).optional(),
     hash: Joi.string(),
     processes: Joi.array().optional(),
@@ -71,7 +72,8 @@ const publishSystemInformation: RequestHandler<any> = async (
       system: body.status.system,
       location: body.status.location,
       processes: body.status.processes,
-      context: body.status.context ?? undefined
+      context: body.status.context ?? undefined,
+      port: body.status.network?.port ?? undefined
     });
 
     await robotStatus.save();

@@ -6,7 +6,9 @@ import { replaceAll } from '../string';
 
 interface EmailSendOption {
     subject: string,
-    to: string,
+    to: string
+    fromAddress?: string
+    fromName?: string
     template: string
     templateArgs?: Record<string, string>
 }
@@ -27,8 +29,8 @@ const sendEmail = async (options: EmailSendOption) => {
 
   const mailOptions: Mail.Options = {
     from: {
-      name: 'Neutron Team',
-      address: 'neutron-robotics@no-reply.com'
+      name: options.fromName ?? 'Neutron Team',
+      address: options.fromAddress ?? 'noreply@neutron-robotics.com'
     },
     to: options.to,
     subject: options.subject,

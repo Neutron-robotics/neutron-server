@@ -355,7 +355,7 @@ const registerTemplate = `
                               <div style="font-size: 14px; color: #003399; line-height: 160%; text-align: center; word-wrap: break-word;">
                                 <p style="font-size: 14px; line-height: 160%;"><span style="font-size: 20px; line-height: 32px;"><strong>Get in touch</strong></span></p>
                                 <p style="font-size: 14px; line-height: 160%;"><span style="font-size: 16px; line-height: 25.6px; color: #000000;">+33 6 01 44 21 30</span></p>
-                                <p style="font-size: 14px; line-height: 160%;"><span style="font-size: 16px; line-height: 25.6px; color: #000000;">hugo.perier@protonmail.com</span></p>
+                                <p style="font-size: 14px; line-height: 160%;"><span style="font-size: 16px; line-height: 25.6px; color: #000000;">contact@neutron-robotics.com</span></p>
                               </div>
 
                             </td>
@@ -392,7 +392,7 @@ const registerTemplate = `
                                     <tbody>
                                       <tr style="vertical-align: top">
                                         <td align="left" valign="middle" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-                                          <a href="hugo.perier@protonmail.com" title="Email" target="_blank">
+                                          <a href="contact@neutron-robotics.com" title="Email" target="_blank">
                                             <img src="https://cdn.tools.unlayer.com/social/icons/circle-black/email.png" alt="Email" title="Email" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                           </a>
                                         </td>

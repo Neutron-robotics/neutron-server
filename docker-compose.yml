@@ -14,7 +14,6 @@ services:
       - APP_SECRET=6A0ye3fWHR
       - FILE_STORAGE=/app/uploads
       - HOSTNAME=localhost
-      - BASE_URI=localhost:3003
       - NEUTRON_BIN_PATH=./data/runtime_dependencies/neutron-connection
       - CONNECTION_MAX_IDLE_TIME=300
     volumes:
