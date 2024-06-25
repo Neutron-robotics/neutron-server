@@ -80,8 +80,11 @@ const RobotStatusSchema = new Schema<IRobotStatus>({
     default: undefined
   },
   system: {
-    cpu: { type: Number },
-    memory: { type: Number }
+    type: {
+      cpu: { type: Number },
+      memory: { type: Number }
+    },
+    default: undefined
   },
   processes: [
     {

@@ -33,12 +33,12 @@ const makeRobot = async (token: string, parts: IRobotPartModel[], organizationNa
   const robot = await Robot.findOne({ name: robotName }).exec();
   if (!robot) { throw new Error('The test robot failed to be created'); };
   if (robotStatus) {
-    await request(app)
+    const resLink = await request(app)
       .post('/agent/link')
       .send({
         secretKey: robot.secretKey
       });
-    await request(app)
+    const resPub = await request(app)
       .post('/agent/publishSystemInformation')
       .send({
         secretKey: robot.secretKey,
@@ -60,7 +60,8 @@ const makeRobot = async (token: string, parts: IRobotPartModel[], organizationNa
           },
           processes: [],
           network: {
-            hostname: 'localhost'
+            hostname: 'localhost',
+            port: 10005
           },
           hash: robot.generateHash()
         }

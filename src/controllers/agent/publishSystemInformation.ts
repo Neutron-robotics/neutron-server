@@ -72,7 +72,7 @@ const publishSystemInformation: RequestHandler<any> = async (
       system: body.status.system,
       location: body.status.location,
       processes: body.status.processes,
-      context: body.status.context ?? undefined
+      context: body.status.context
     });
 
     await robotStatus.save();
