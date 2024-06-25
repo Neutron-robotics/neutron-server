@@ -8,7 +8,6 @@ export interface IRobotLocationStatus {
 
 export interface IRobotNetworkInfo {
   hostname: string
-  port: number
 }
 
 export enum RobotStatus {
@@ -51,7 +50,6 @@ export interface IRobotStatus extends Document {
     location?: IRobotLocationStatus;
     processes?: IRobotProcess[]
     context?: IRobotContextProcess
-    port?: number
 }
 
 const RobotStatusSchema = new Schema<IRobotStatus>({
@@ -63,9 +61,6 @@ const RobotStatusSchema = new Schema<IRobotStatus>({
   status: {
     type: String,
     enum: Object.values(RobotStatus)
-  },
-  port: {
-    type: Number
   },
   robot: {
     type: Schema.Types.ObjectId,
