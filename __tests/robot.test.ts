@@ -12,7 +12,7 @@ import Organization from '../src/models/Organization';
 import { RobotPartCategory } from '../src/models/RobotPart';
 import Ros2SystemModel from '../src/models/Ros2/Ros2System';
 import { PublishSystemInformationRequest } from '../src/controllers/agent/publishSystemInformation';
-import { RobotStatus } from '../src/models/RobotStatus';
+import RobotStatusModel, { RobotStatus } from '../src/models/RobotStatus';
 import { sleep } from '../src/utils/time';
 import { deleteDataViewByIndexPattern, createDataView } from '../src/api/elasticsearch/dataview';
 import { deleteDashboard, createConnectionDashboard } from '../src/api/elasticsearch/connectionDashboard';
@@ -321,6 +321,25 @@ describe('robot tests', () => {
 
   it('should start a robot', async () => {
     const { robot } = await makeRobot(token, []);
+    const robotStatus = new RobotStatusModel({
+      status: RobotStatus.Online,
+      robot: robot._id,
+      battery: {
+        level: 100,
+        charging: true
+      },
+      context: {
+        cpu: 25,
+        mem: 512,
+        mem_usage: 50,
+        active: true,
+        pid: 12345,
+        name: 'example-process',
+        id: 'process-001',
+        port: 8080
+      }
+    });
+    await robotStatus.save();
 
     const mockAxios = jest.fn();
     (axios.post as any).mockImplementation(mockAxios);
@@ -333,11 +352,30 @@ describe('robot tests', () => {
       .auth(token, { type: 'bearer' });
 
     expect(res.statusCode).toBe(200);
-    expect(mockAxios).toHaveBeenCalledWith('http://undefined:8000/robot/start', {});
+    expect(mockAxios).toHaveBeenCalledWith('http://rsshd:8080/robot/start', {});
   });
 
   it('should stop a robot', async () => {
     const { robot } = await makeRobot(token, []);
+    const robotStatus = new RobotStatusModel({
+      status: RobotStatus.Online,
+      robot: robot._id,
+      battery: {
+        level: 100,
+        charging: true
+      },
+      context: {
+        cpu: 25,
+        mem: 512,
+        mem_usage: 50,
+        active: true,
+        pid: 12345,
+        name: 'example-process',
+        id: 'process-001',
+        port: 8080
+      }
+    });
+    await robotStatus.save();
 
     const mockAxios = jest.fn();
     (axios.post as any).mockImplementation(mockAxios);
@@ -350,7 +388,7 @@ describe('robot tests', () => {
       .auth(token, { type: 'bearer' });
 
     expect(res.statusCode).toBe(200);
-    expect(mockAxios).toHaveBeenCalledWith('http://undefined:8000/robot/stop', {});
+    expect(mockAxios).toHaveBeenCalledWith('http://rsshd:8080/robot/stop', {});
   });
 
   it('should start a robot with parts', async () => {
@@ -368,6 +406,25 @@ describe('robot tests', () => {
         imgUrl: 'https://static.neutron.com/robot/wdjxsiushf.png'
       }
     ]);
+    const robotStatus = new RobotStatusModel({
+      status: RobotStatus.Online,
+      robot: robot._id,
+      battery: {
+        level: 100,
+        charging: true
+      },
+      context: {
+        cpu: 25,
+        mem: 512,
+        mem_usage: 50,
+        active: true,
+        pid: 12345,
+        name: 'example-process',
+        id: 'process-001',
+        port: 8080
+      }
+    });
+    await robotStatus.save();
 
     const mockAxios = jest.fn();
     (axios.post as any).mockImplementation(mockAxios);
@@ -383,7 +440,7 @@ describe('robot tests', () => {
       });
 
     expect(res.statusCode).toBe(200);
-    expect(mockAxios).toHaveBeenCalledWith('http://undefined:8000/robot/start', {
+    expect(mockAxios).toHaveBeenCalledWith('http://rsshd:8080/robot/start', {
       processesId: [robot.parts[0]._id, robot.parts[1]._id]
     });
   });
@@ -405,6 +462,26 @@ describe('robot tests', () => {
 
   it('should throw an error if the robot cannot be started', async () => {
     const { robot } = await makeRobot(token, []);
+    const robotStatus = new RobotStatusModel({
+      status: RobotStatus.Online,
+      robot: robot._id,
+      battery: {
+        level: 100,
+        charging: true
+      },
+      context: {
+        cpu: 25,
+        mem: 512,
+        mem_usage: 50,
+        active: true,
+        pid: 12345,
+        name: 'example-process',
+        id: 'process-001',
+        port: 8080
+      }
+    });
+    await robotStatus.save();
+
     const mockAxios = jest.fn();
     (axios.post as any).mockImplementation(mockAxios);
     mockAxios.mockReturnValue(Promise.resolve({
@@ -420,7 +497,7 @@ describe('robot tests', () => {
 
     expect(res.statusCode).toBe(500);
     expect(res.body).toStrictEqual({
-      error: '[object Object]'
+      error: 'Failed to start the robot'
     });
     expect(mockAxios).toHaveBeenCalled();
   });

@@ -26,7 +26,7 @@ const stopRobot: RequestHandler<any> = async (
   const userId = (req as any).user.sub as string;
 
   try {
-    const robot = await Robot.findById(params.robotId).lean();
+    const robot = await Robot.findById(params.robotId);
 
     if (!robot) throw new NotFound();
 
