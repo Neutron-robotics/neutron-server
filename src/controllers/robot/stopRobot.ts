@@ -7,6 +7,7 @@ import { Forbidden, NotFound } from '../../errors/bad-request';
 import Organization from '../../models/Organization';
 import Robot from '../../models/Robot';
 import * as agentApi from '../../api/connection';
+import ApplicationError from '../../errors/application-error';
 
 interface StopRobotParams {
     robotId: string
@@ -33,7 +34,10 @@ const stopRobot: RequestHandler<any> = async (
 
     if (!organization || !organization.users.find(e => e.userId.toString() === userId)) { throw new Forbidden(); };
 
-    await agentApi.stopRobot(robot.hostname, 8000); // todo handle port
+    const latestRobotStatus = await robot.getLatestStatus();
+    if (!latestRobotStatus?.context?.port) throw new ApplicationError('The latest robot status does not contain a valid port');
+
+    await agentApi.stopRobot('rsshd', latestRobotStatus.context.port);
 
     return res.json({
       message: 'OK'

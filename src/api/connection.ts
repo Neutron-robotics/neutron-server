@@ -8,9 +8,14 @@ const register = async (hostname: string, port: number, registerId: string) => {
 };
 
 // neutron-agent
+const startRobot = async (hostname: string, port: number) => {
+  const res = await axios.post(`http://${hostname}:${port}/robot/start`, {});
+  if (res.status !== 200) { throw new ApplicationError('Failed to start the robot'); };
+};
+
 const stopRobot = async (hostname: string, port: number) => {
   const res = await axios.post(`http://${hostname}:${port}/robot/stop`, {});
   if (res.status !== 200) { throw new ApplicationError('Failed to stop the robot'); };
 };
 
-export { register, stopRobot };
+export { register, startRobot, stopRobot };

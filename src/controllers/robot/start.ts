@@ -7,6 +7,8 @@ import requestMiddleware from '../../middleware/request-middleware';
 import { Forbidden, NotFound } from '../../errors/bad-request';
 import Organization from '../../models/Organization';
 import Robot from '../../models/Robot';
+import { startRobot } from '../../api/connection';
+import ApplicationError from '../../errors/application-error';
 
 interface StartRobotParams {
     robotId: string
@@ -45,8 +47,10 @@ const start: RequestHandler<any> = async (
 
     const parts = await robot.parts.filter(e => body?.partsId?.includes(e._id.toString()) ?? true);
 
-    const response = await axios.post(`http://${robot.hostname}:8000/robot/start`, parts.length === 0 ? {} : { processesId: parts.map(e => e._id) });
-    if (response.status !== 200) throw new Error(response.data);
+    const latestRobotStatus = await robot.getLatestStatus();
+    if (!latestRobotStatus?.context?.port) throw new ApplicationError('The latest robot status does not contain a valid port');
+
+    await startRobot('rsshd', latestRobotStatus.context.port); // todo handle context type and adapt hostname
 
     return res.json({
       message: 'OK'
