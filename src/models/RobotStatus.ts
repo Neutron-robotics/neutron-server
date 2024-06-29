@@ -8,6 +8,7 @@ export interface IRobotLocationStatus {
 
 export interface IRobotNetworkInfo {
   hostname: string
+  port: string
 }
 
 export enum RobotStatus {
