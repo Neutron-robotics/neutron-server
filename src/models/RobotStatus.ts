@@ -51,6 +51,7 @@ export interface IRobotStatus extends Document {
     location?: IRobotLocationStatus;
     processes?: IRobotProcess[]
     context?: IRobotContextProcess
+    port?: number
 }
 
 const RobotStatusSchema = new Schema<IRobotStatus>({
@@ -104,13 +105,17 @@ const RobotStatusSchema = new Schema<IRobotStatus>({
       mem: { type: Number, required: true },
       mem_usage: { type: Number, required: true },
       active: { type: Boolean, required: true },
+      port: { type: Number, required: true },
       pid: { type: Number, required: true },
       name: { type: String, required: true },
-      id: { type: String, required: true },
-      port: { type: Number, required: true }
+      id: { type: String, required: true }
     },
     required: false,
     default: undefined
+  },
+  port: {
+    type: Number,
+    required: false
   }
 });
 

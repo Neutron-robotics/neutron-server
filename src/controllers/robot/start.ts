@@ -48,10 +48,10 @@ const start: RequestHandler<any> = async (
     const parts = await robot.parts.filter(e => body?.partsId?.includes(e._id.toString()) ?? true);
 
     const latestRobotStatus = await robot.getLatestStatus();
-    if (!latestRobotStatus?.context?.port) throw new ApplicationError('The latest robot status does not contain a valid port');
+    if (!latestRobotStatus?.port) throw new ApplicationError('The latest robot status does not contain a valid port');
 
     const processesId = parts.length === 0 ? undefined : parts.map(e => e._id);
-    await startRobot('rsshd', latestRobotStatus.context.port, processesId); // todo handle context type and adapt hostname
+    await startRobot('rsshd', latestRobotStatus.port, processesId); // todo handle context type and adapt hostname
 
     return res.json({
       message: 'OK'

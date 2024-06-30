@@ -336,8 +336,9 @@ describe('robot tests', () => {
         pid: 12345,
         name: 'example-process',
         id: 'process-001',
-        port: 8080
-      }
+        port: 8081
+      },
+      port: 8080
     });
     await robotStatus.save();
 
@@ -372,8 +373,9 @@ describe('robot tests', () => {
         pid: 12345,
         name: 'example-process',
         id: 'process-001',
-        port: 8080
-      }
+        port: 8081
+      },
+      port: 8080
     });
     await robotStatus.save();
 
@@ -421,8 +423,9 @@ describe('robot tests', () => {
         pid: 12345,
         name: 'example-process',
         id: 'process-001',
-        port: 8080
-      }
+        port: 8081
+      },
+      port: 8080
     });
     await robotStatus.save();
 
@@ -477,8 +480,9 @@ describe('robot tests', () => {
         pid: 12345,
         name: 'example-process',
         id: 'process-001',
-        port: 8080
-      }
+        port: 8081
+      },
+      port: 8080
     });
     await robotStatus.save();
 

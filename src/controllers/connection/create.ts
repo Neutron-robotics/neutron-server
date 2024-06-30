@@ -49,7 +49,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     if (!robot) { throw new BadRequest('Robot not found'); };
 
     const robotStatus = await robot.getLatestStatus();
-    if (!robotStatus || robotStatus.status !== RobotStatus.Operating || !robotStatus.context?.port) { throw new BadRequest('The robot is not ready for connection'); }
+    if (!robotStatus || robotStatus.status !== RobotStatus.Operating || !robotStatus.context?.port || !robotStatus.port) { throw new BadRequest('The robot is not ready for connection'); }
 
     const existingActiveConnection = await Connection.findOne({ robotId: body.robotId, isActive: true });
     if (existingActiveConnection) { throw new BadRequest('An active connection already exist'); };
@@ -57,7 +57,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     const connectionPort = randomIntFromInterval(10000, 19000);
 
     // The robot context port for bridging connection is always the default port + 1
-    const execParams = `${binPath} --id ${connectionId} --robot-host rsshd --robot-port ${robotStatus.context.port + 1} --application-port ${connectionPort} --application-timeout ${process.env.CONNECTION_MAX_IDLE_TIME}`;
+    const execParams = `${binPath} --id ${connectionId} --robot-host rsshd --robot-port ${robotStatus.port + 1} --application-port ${connectionPort} --application-timeout ${process.env.CONNECTION_MAX_IDLE_TIME}`;
     const neutronProcess = spawn(execParams, { shell: true });
 
     if (!neutronProcess.pid) { throw new ApplicationError('No PID for neutron process'); };

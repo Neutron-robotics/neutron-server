@@ -35,9 +35,9 @@ const stopRobot: RequestHandler<any> = async (
     if (!organization || !organization.users.find(e => e.userId.toString() === userId)) { throw new Forbidden(); };
 
     const latestRobotStatus = await robot.getLatestStatus();
-    if (!latestRobotStatus?.context?.port) throw new ApplicationError('The latest robot status does not contain a valid port');
+    if (!latestRobotStatus?.port) throw new ApplicationError('The latest robot status does not contain a valid port');
 
-    await agentApi.stopRobot('rsshd', latestRobotStatus.context.port);
+    await agentApi.stopRobot('rsshd', latestRobotStatus.port);
 
     return res.json({
       message: 'OK'

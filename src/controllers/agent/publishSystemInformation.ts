@@ -65,11 +65,6 @@ const publishSystemInformation: RequestHandler<any> = async (
       await robot.save();
     }
 
-    const contextInfos = {
-      ...body.status.context,
-      port: body.status.network?.port
-    };
-
     const robotStatus = new RobotStatusModel({
       status: body.status.status,
       robot: robot._id,
@@ -77,12 +72,8 @@ const publishSystemInformation: RequestHandler<any> = async (
       system: body.status.system,
       location: body.status.location,
       processes: body.status.processes,
-      context: body.status.context
-        ? {
-          ...body.status.context,
-          port: body.status.network?.port
-        }
-        : body.status.context
+      context: body.status.context,
+      port: body.status.network?.port
     });
 
     await robotStatus.save();
