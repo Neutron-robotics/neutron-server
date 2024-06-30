@@ -60,6 +60,8 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     const execParams = `${binPath} --id ${connectionId} --robot-host rsshd --robot-port ${robotStatus.port + 1} --application-port ${connectionPort} --application-timeout ${process.env.CONNECTION_MAX_IDLE_TIME}`;
     const neutronProcess = spawn(execParams, { shell: true });
 
+    logger.info(`Create connection with exec param: ${execParams}`);
+
     if (!neutronProcess.pid) { throw new ApplicationError('No PID for neutron process'); };
     const timeout = 4000; // 4 seconds
     const readyLine = `neutron connection ${connectionId} ready`;
@@ -69,6 +71,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
       const msgs = output.split('\n');
       msgs.forEach(msg => {
         if (!msg.length) return;
+        logger.info(`C [${connectionId}] Logged message: ${execParams}`);
         connectionLogger.info(msg, {
           organizationId: organization.id,
           robotId: robot.id
@@ -142,6 +145,8 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     });
 
     await waitForReadyLine;
+
+    logger.info(`Connection ${connectionId} has started successfully`);
 
     const newConnection = new Connection({
       _id: connectionId,
