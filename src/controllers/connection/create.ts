@@ -159,7 +159,9 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
 
     await newConnection.save();
 
-    await agentApi.register(hostname, connectionPort, userId);
+    logger.info('registering api');
+    await agentApi.register('localhost', connectionPort, userId);
+    logger.info('registering api done, OK');
 
     res.send({
       message: 'OK',
