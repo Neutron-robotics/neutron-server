@@ -6,6 +6,7 @@ import cors from 'cors';
 import ApplicationError from './errors/application-error';
 import routes from './routes';
 import logger from './logger';
+import createWebSocketProxyServer from './utils/createWebSocketProxyServer';
 
 const app = express();
 
@@ -58,5 +59,7 @@ app.use(
     });
   }
 );
+
+createWebSocketProxyServer(8080);
 
 export default app;
