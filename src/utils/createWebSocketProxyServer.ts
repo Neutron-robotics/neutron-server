@@ -42,6 +42,7 @@ const createWebSocketProxyServer = (port: number) => {
       const targetPort = match[1];
       const connectionId = match[2];
       const targetUrl = `${targetPort}/connection/${connectionId}`;
+      console.log('[DEBUG] target url is ', targetUrl, 'pathanem is ', pathname);
       wss.handleUpgrade(request, socket, head, ws => {
         wss.emit('connection', ws, request, targetUrl);
       });
