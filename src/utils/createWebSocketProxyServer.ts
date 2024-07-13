@@ -15,8 +15,10 @@ const createWebSocketProxyServer = (port: number) => {
     });
 
     targetWs.on('message', (message: WebSocket.RawData) => {
-      console.log(`[DEBUG ${targetPort}] - targetWs message`);
-      ws.send(message);
+      console.log(`[DEBUG ${targetPort}] - targetWs message`, message);
+      ws.send(message, err => {
+        console.log(`[DEBUG ${targetPort}] - ERROR WHEN SENDING MSG ${err?.message}`);
+      });
     });
 
     ws.on('close', () => {
