@@ -37,4 +37,6 @@ COPY --from=base ./dependencies ./dependencies
 
 # Expose port 3000
 EXPOSE 3000
+EXPOSE 8080
+EXPOSE 13127
 CMD ["dist/server.js"]
