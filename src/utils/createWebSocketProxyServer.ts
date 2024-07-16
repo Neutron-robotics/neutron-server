@@ -11,7 +11,7 @@ const createWebSocketProxyServer = (port: number) => {
 
     ws.on('message', (message: WebSocket.RawData) => {
       console.log(`[DEBUG ${targetPort}] - ws message`);
-      if (targetWs.CONNECTING) {
+      if (targetWs.readyState === targetWs.CONNECTING) {
         console.log('[DEBUG ] CONNECTING');
         targetWs.addEventListener('open', e => {
           console.log(`[DEBUG ${targetPort}] - ws message`);
