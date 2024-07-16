@@ -11,7 +11,17 @@ const createWebSocketProxyServer = (port: number) => {
 
     ws.on('message', (message: WebSocket.RawData) => {
       console.log(`[DEBUG ${targetPort}] - ws message`);
-      targetWs.send(message);
+      if (targetWs.CONNECTING) {
+        console.log('[DEBUG ] CONNECTING');
+        targetWs.addEventListener('open', e => {
+          console.log(`[DEBUG ${targetPort}] - ws message`);
+          console.log('[DEBUG ] CONNECTED - HAHAHAH JENVOI');
+          targetWs.send(message);
+        });
+      } else {
+        console.log('[DEBUG ] NOT CONNECTING ;)');
+        targetWs.send(message);
+      }
     });
 
     targetWs.on('message', (message: WebSocket.RawData) => {
