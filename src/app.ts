@@ -60,10 +60,10 @@ app.use(
   }
 );
 
-if (process.env.WS_PROXY) {
-  const wsProxy = +process.env.WS_PROXY;
-  logger.info(`🌐 Enabling WS proxy on port ${wsProxy}`);
-  createWebSocketProxyServer(wsProxy);
-}
+// if (process.env.WS_PROXY) {
+//   const wsProxy = +process.env.WS_PROXY;
+//   logger.info(`🌐 Enabling WS proxy on port ${wsProxy}`);
+//   createWebSocketProxyServer(wsProxy);
+// }
 
 export default app;
