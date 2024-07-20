@@ -54,7 +54,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     const existingActiveConnection = await Connection.findOne({ robotId: body.robotId, isActive: true });
     if (existingActiveConnection) { throw new BadRequest('An active connection already exist'); };
 
-    const connectionPort = randomIntFromInterval(10000, 19000);
+    const connectionPort = randomIntFromInterval(12000, 14000);
 
     // The robot context port for bridging connection is always the default port + 1
     const execParams = `${binPath} --id ${connectionId} --robot-host rsshd --robot-port ${robotStatus.port + 1} --application-port ${connectionPort} --application-timeout ${process.env.CONNECTION_MAX_IDLE_TIME}`;
