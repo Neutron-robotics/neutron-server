@@ -57,7 +57,7 @@ const create: RequestHandler = async (req: Request<{}, {}, CreateConnectionBody>
     const connectionPort = randomIntFromInterval(12000, 14000);
 
     // The robot context port for bridging connection is always the default port + 1
-    const execParams = `${binPath} --id ${connectionId} --robot-host rsshd --robot-port ${robotStatus.port + 1} --application-port ${connectionPort} --application-timeout ${process.env.CONNECTION_MAX_IDLE_TIME}`;
+    const execParams = `${binPath} --id ${connectionId} --robot-host rsshd --robot-agent-port ${robotStatus.port} --robot-context-port ${robotStatus.port + 1} --application-port ${connectionPort} --application-timeout ${process.env.CONNECTION_MAX_IDLE_TIME}`;
     const neutronProcess = spawn(execParams, { shell: true });
 
     logger.info(`Create connection with exec param: ${execParams}`);
